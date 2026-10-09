@@ -573,6 +573,7 @@
 
       <div class="acciones">
         <button type="button" class="btn btn-secundario" id="btn-ver-inicio" hidden>Ver inicio</button>
+        <button type="button" class="btn btn-secundario" id="btn-cerrar-sesion-flujo">Cerrar sesión</button>
         <button type="button" class="btn" id="btn-siguiente" disabled>Continuar</button>
       </div>
     </section>
@@ -1201,12 +1202,16 @@
       document.getElementById("titulo-registro").focus();
     });
 
-    document.getElementById("btn-cerrar-sesion").addEventListener("click", () => {
+    function cerrarSesion() {
       sessionStorage.removeItem(CLAVE_SESION);
       pantallaPrincipal.hidden = true;
+      flujoInicial.hidden = true;
       loginInicial.hidden = false;
       document.getElementById("titulo-login").focus();
-    });
+    }
+
+    document.getElementById("btn-cerrar-sesion").addEventListener("click", cerrarSesion);
+    document.getElementById("btn-cerrar-sesion-flujo").addEventListener("click", cerrarSesion);
 
     const usuarioGuardado = JSON.parse(localStorage.getItem(CLAVE_USUARIO) || "null");
     if (!usuarioGuardado || !usuarioGuardado.claveHash) {
