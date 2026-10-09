@@ -160,6 +160,14 @@
 
     .detalle-dia p { margin: 0; color: #475569; }
 
+    .detalle-dia h4 {
+      margin: 0.75rem 0 0.25rem;
+      color: #1e3a8a;
+      font-size: 0.95rem;
+    }
+
+    .detalle-dia ul + h4 { margin-top: 0.75rem; }
+
     .contenedor-paso {
       background: #ffffff;
       border-radius: 16px;
@@ -674,21 +682,43 @@
         }
       });
       const emociones = [...porEmocion.values()];
-      if (emociones.length === 0) {
+      const pensamientos = delDia.flatMap((registro) => lineas(registro.pensamiento));
+      const acciones = delDia.flatMap((registro) => lineas(registro.accion));
+
+      if (emociones.length === 0 && pensamientos.length === 0 && acciones.length === 0) {
         const aviso = document.createElement("p");
         aviso.textContent = "No hay registros este día.";
         contenedorDetalle.appendChild(aviso);
         return;
       }
 
-      const lista = document.createElement("ul");
-      emociones.forEach(({ emocion, intensidad }) => {
-        const item = document.createElement("li");
-        item.style.color = colorDe(emocion);
-        item.textContent = `${emocion}: intensidad ${intensidad}`;
-        lista.appendChild(item);
+      if (emociones.length > 0) {
+        const lista = document.createElement("ul");
+        emociones.forEach(({ emocion, intensidad }) => {
+          const item = document.createElement("li");
+          item.style.color = colorDe(emocion);
+          item.textContent = `${emocion}: intensidad ${intensidad}`;
+          lista.appendChild(item);
+        });
+        contenedorDetalle.appendChild(lista);
+      }
+
+      [["¿Qué pensaste?", pensamientos], ["¿Qué hiciste?", acciones]].forEach(([pregunta, puntos]) => {
+        if (puntos.length === 0) return;
+        const subtitulo = document.createElement("h4");
+        subtitulo.textContent = pregunta;
+        const lista = document.createElement("ul");
+        puntos.forEach((punto) => {
+          const item = document.createElement("li");
+          item.textContent = punto;
+          lista.appendChild(item);
+        });
+        contenedorDetalle.append(subtitulo, lista);
       });
-      contenedorDetalle.appendChild(lista);
+    }
+
+    function lineas(texto) {
+      return (texto || "").split("\n").map((linea) => linea.trim()).filter(Boolean);
     }
 
     function reiniciarFlujo() {
