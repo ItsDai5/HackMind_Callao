@@ -655,7 +655,13 @@
       encabezado.textContent = titulo;
       contenedorDetalle.appendChild(encabezado);
 
-      const emociones = delDia.flatMap((registro) => registro.emociones);
+      const porEmocion = new Map();
+      delDia.flatMap((registro) => registro.emociones).forEach(({ emocion, intensidad }) => {
+        if (!porEmocion.has(emocion) || intensidad > porEmocion.get(emocion).intensidad) {
+          porEmocion.set(emocion, { emocion, intensidad });
+        }
+      });
+      const emociones = [...porEmocion.values()];
       if (emociones.length === 0) {
         const aviso = document.createElement("p");
         aviso.textContent = "No hay registros este día.";
@@ -697,10 +703,10 @@
     }
 
     botonFinalizar.addEventListener("click", () => {
-      const registros = leerRegistros();
-      const ahora = new Date();
+      const fechaHoy = fechaLocal(new Date());
+      const registros = leerRegistros().filter((registro) => registro.fecha !== fechaHoy);
       registros.push({
-        fecha: fechaLocal(ahora),
+        fecha: fechaHoy,
         emociones: emocionesSeleccionadas.map((nombre) => ({
           emocion: nombre,
           intensidad: intensidades[nombre]
