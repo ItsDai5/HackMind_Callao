@@ -234,7 +234,6 @@
   </div>
 
   <script>
-    const CLAVE_PRIMER_USO = "emosense_onboarding_completado";
     const CLAVE_REGISTRO = "emosense_registro";
 
     const EMOCIONES = [
@@ -281,10 +280,8 @@
 
     botonComenzar.addEventListener("click", () => {
       bienvenida.hidden = true;
-      if (!localStorage.getItem(CLAVE_PRIMER_USO)) {
-        flujoInicial.hidden = false;
-        document.getElementById("titulo-paso-1").focus();
-      }
+      flujoInicial.hidden = false;
+      document.getElementById("titulo-paso-1").focus();
     });
 
     function construirIntensidades() {
@@ -344,7 +341,6 @@
           intensidad: intensidades[nombre]
         }))
       }));
-      localStorage.setItem(CLAVE_PRIMER_USO, "true");
       flujoInicial.hidden = true;
     });
   </script>
