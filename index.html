@@ -63,8 +63,120 @@
       transition: background 0.2s ease;
     }
 
-    .btn:hover { background: #b91c1c; }
+    .btn:hover:not(:disabled) { background: #b91c1c; }
+    .btn:disabled { background: #cbd5e1; cursor: not-allowed; }
     .btn:focus-visible { outline: 3px solid #93c5fd; outline-offset: 2px; }
+
+    .btn-secundario {
+      background: #ffffff;
+      color: #1e3a8a;
+      border: 2px solid #1e3a8a;
+    }
+
+    .btn-secundario:hover { background: #dbeafe; }
+
+    .pantalla-completa {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      background: linear-gradient(135deg, #dbeafe, #fee2e2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      overflow-y: auto;
+    }
+
+    .pantalla-completa[hidden] { display: none; }
+
+    .contenedor-paso {
+      background: #ffffff;
+      border-radius: 16px;
+      max-width: 720px;
+      width: 100%;
+      padding: 2rem;
+      text-align: center;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+    }
+
+    .contenedor-paso[hidden] { display: none; }
+
+    .indicador {
+      font-size: 0.9rem;
+      color: #dc2626;
+      font-weight: 600;
+      margin: 0 0 0.5rem;
+    }
+
+    .contenedor-paso h2 {
+      margin: 0 0 0.5rem;
+      color: #1e3a8a;
+      font-size: 1.5rem;
+    }
+
+    .contenedor-paso .subtitulo {
+      margin: 0 0 1.5rem;
+      color: #334155;
+    }
+
+    .emociones {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .emocion {
+      background: #f8fafc;
+      border: 2px solid #cbd5e1;
+      border-radius: 12px;
+      padding: 0.9rem 0.5rem;
+      font-size: 0.95rem;
+      color: #1e293b;
+      cursor: pointer;
+      transition: border-color 0.2s ease, background 0.2s ease;
+    }
+
+    .emocion:hover { border-color: #93c5fd; }
+    .emocion[aria-pressed="true"] {
+      border-color: #1e3a8a;
+      background: #dbeafe;
+      color: #1e3a8a;
+      font-weight: 600;
+    }
+    .emocion:focus-visible { outline: 3px solid #93c5fd; outline-offset: 2px; }
+
+    .acciones {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .intensidad-valor {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #dc2626;
+      margin: 0.5rem 0;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: #dc2626;
+      margin-bottom: 0.5rem;
+    }
+
+    .escala {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      color: #64748b;
+      margin-bottom: 1.5rem;
+    }
+
+    @media (max-width: 600px) {
+      .emociones { grid-template-columns: repeat(2, 1fr); }
+    }
   </style>
 </head>
 <body>
@@ -80,15 +192,117 @@
     </div>
   </div>
 
-  <script>
-    const overlay = document.getElementById("bienvenida");
-    const boton = document.getElementById("btn-comenzar");
+  <div class="pantalla-completa" id="flujo-inicial" role="dialog" aria-modal="true" aria-labelledby="titulo-paso-1" hidden>
 
-    boton.addEventListener("click", () => {
-      overlay.hidden = true;
+    <section class="contenedor-paso" id="paso-1">
+      <p class="indicador">Paso 1 de 2</p>
+      <h2 id="titulo-paso-1" tabindex="-1">¿Qué emoción sientes ahora?</h2>
+      <p class="subtitulo">Elige la emoción que mejor describa cómo te sientes.</p>
+
+      <div class="emociones" id="lista-emociones"></div>
+
+      <div class="acciones">
+        <span></span>
+        <button type="button" class="btn" id="btn-siguiente" disabled>Siguiente</button>
+      </div>
+    </section>
+
+    <section class="contenedor-paso" id="paso-2" hidden>
+      <p class="indicador">Paso 2 de 2</p>
+      <h2>¿Qué tan intensa es?</h2>
+      <p class="subtitulo">Emoción seleccionada: <strong id="emocion-elegida"></strong></p>
+
+      <div class="intensidad-valor" id="valor-intensidad">5</div>
+      <input type="range" id="intensidad" min="1" max="10" value="5" aria-label="Intensidad de la emoción">
+      <div class="escala">
+        <span>Leve (1)</span>
+        <span>Muy intensa (10)</span>
+      </div>
+
+      <div class="acciones">
+        <button type="button" class="btn btn-secundario" id="btn-atras">Atrás</button>
+        <button type="button" class="btn" id="btn-finalizar">Finalizar</button>
+      </div>
+    </section>
+
+  </div>
+
+  <script>
+    const CLAVE_PRIMER_USO = "emosense_onboarding_completado";
+    const CLAVE_REGISTRO = "emosense_registro";
+
+    const EMOCIONES = [
+      "Alegría/Felicidad", "Tristeza", "Miedo", "Ira/Enojo", "Asco/Aversión",
+      "Frustración", "Sobrecarga", "Soledad", "Estrés", "Ansiedad", "Sensible",
+      "Seguridad", "Irritabilidad", "Entusiasmo", "Inseguridad", "Indiferencia"
+    ];
+
+    const bienvenida = document.getElementById("bienvenida");
+    const botonComenzar = document.getElementById("btn-comenzar");
+    const flujoInicial = document.getElementById("flujo-inicial");
+    const paso1 = document.getElementById("paso-1");
+    const paso2 = document.getElementById("paso-2");
+    const listaEmociones = document.getElementById("lista-emociones");
+    const botonSiguiente = document.getElementById("btn-siguiente");
+    const botonAtras = document.getElementById("btn-atras");
+    const botonFinalizar = document.getElementById("btn-finalizar");
+    const emocionElegida = document.getElementById("emocion-elegida");
+    const rangoIntensidad = document.getElementById("intensidad");
+    const valorIntensidad = document.getElementById("valor-intensidad");
+
+    let emocionSeleccionada = null;
+
+    EMOCIONES.forEach((nombre) => {
+      const boton = document.createElement("button");
+      boton.type = "button";
+      boton.className = "emocion";
+      boton.textContent = nombre;
+      boton.setAttribute("aria-pressed", "false");
+      boton.addEventListener("click", () => seleccionarEmocion(nombre, boton));
+      listaEmociones.appendChild(boton);
     });
 
-    boton.focus();
+    function seleccionarEmocion(nombre, boton) {
+      emocionSeleccionada = nombre;
+      listaEmociones.querySelectorAll(".emocion").forEach((b) => {
+        b.setAttribute("aria-pressed", b === boton ? "true" : "false");
+      });
+      botonSiguiente.disabled = false;
+    }
+
+    botonComenzar.addEventListener("click", () => {
+      bienvenida.hidden = true;
+      if (!localStorage.getItem(CLAVE_PRIMER_USO)) {
+        flujoInicial.hidden = false;
+        document.getElementById("titulo-paso-1").focus();
+      }
+    });
+
+    botonSiguiente.addEventListener("click", () => {
+      emocionElegida.textContent = emocionSeleccionada;
+      paso1.hidden = true;
+      paso2.hidden = false;
+      botonFinalizar.focus();
+    });
+
+    botonAtras.addEventListener("click", () => {
+      paso2.hidden = true;
+      paso1.hidden = false;
+      botonSiguiente.focus();
+    });
+
+    rangoIntensidad.addEventListener("input", () => {
+      valorIntensidad.textContent = rangoIntensidad.value;
+    });
+
+    botonFinalizar.addEventListener("click", () => {
+      localStorage.setItem(CLAVE_REGISTRO, JSON.stringify({
+        emocion: emocionSeleccionada,
+        intensidad: Number(rangoIntensidad.value)
+      }));
+      localStorage.setItem(CLAVE_PRIMER_USO, "true");
+      flujoInicial.hidden = true;
+    });
   </script>
 
 </body>
