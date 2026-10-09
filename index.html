@@ -629,6 +629,8 @@
 
   <script>
     const CLAVE_REGISTROS = "emosense_registros";
+    const SUPABASE_FUNCION_URL = "https://jyfbomsfbadggtoosfuz.supabase.co/functions/v1/guardar-registro";
+    const SUPABASE_CLAVE_PUBLICA = "sb_publishable_JAg6qzQXNSY-WyXYMlZvFg_HAA0k4IL";
     const DIAS_SEMANA = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
 
     const EMOCIONES = [
@@ -1036,15 +1038,43 @@
       const acumular = (previo, nuevo) => [previo, nuevo].map((texto) => (texto || "").trim()).filter(Boolean).join("\n");
       const emocionesDelDia = new Map((anterior?.emociones || []).map(({ emocion, intensidad }) => [emocion, intensidad]));
       emocionesSeleccionadas.forEach((nombre) => emocionesDelDia.set(nombre, intensidades[nombre]));
-      registros.push({
+      const nuevoRegistro = {
         fecha: fechaHoy,
         emociones: [...emocionesDelDia].map(([emocion, intensidad]) => ({ emocion, intensidad })),
         pensamiento: acumular(anterior?.pensamiento, quePensaste.value),
         accion: acumular(anterior?.accion, queHiciste.value)
-      });
+      };
+      registros.push(nuevoRegistro);
       localStorage.setItem(CLAVE_REGISTROS, JSON.stringify(registros));
+      enviarRegistro(nuevoRegistro);
       mostrarPantallaPrincipal();
     });
+
+    function enviarRegistro(registro) {
+      const usuario = JSON.parse(localStorage.getItem(CLAVE_USUARIO) || "null");
+      if (!usuario) return;
+
+      fetch(SUPABASE_FUNCION_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          apikey: SUPABASE_CLAVE_PUBLICA,
+          Authorization: `Bearer ${SUPABASE_CLAVE_PUBLICA}`
+        },
+        body: JSON.stringify({
+          nombre: usuario.nombre,
+          correo: usuario.correo,
+          codigo: usuario.codigo,
+          dni: usuario.dni,
+          sede: usuario.sede,
+          ...registro
+        })
+      })
+        .then(async (respuesta) => {
+          if (!respuesta.ok) console.error("No se guardó el registro en el servidor:", await respuesta.text());
+        })
+        .catch((error) => console.error("No se pudo conectar con el servidor:", error));
+    }
 
     botonVerInicio.addEventListener("click", mostrarPantallaPrincipal);
     actualizarBotonVerInicio();
