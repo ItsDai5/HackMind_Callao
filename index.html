@@ -399,6 +399,13 @@
 
     .campo textarea:focus-visible { outline: 3px solid #93c5fd; outline-offset: 2px; }
 
+    .barra-sesion {
+      width: 100%;
+      max-width: 720px;
+      display: flex;
+      justify-content: flex-end;
+    }
+
     .mensaje-error {
       color: #b91c1c;
       font-weight: 600;
@@ -564,6 +571,10 @@
       <p class="subtitulo">Un espacio para expresar tus emociones y cuidar tu bienestar emocional. 🌷</p>
     </div>
 
+    <div class="barra-sesion">
+      <button type="button" class="btn btn-secundario" id="btn-cerrar-sesion-flujo">Cerrar sesión</button>
+    </div>
+
     <section class="contenedor-paso" id="paso-1">
       <p class="indicador">Paso 1 de 3</p>
       <h2 id="titulo-paso-1" tabindex="-1">¿Qué emoción sientes ahora?</h2>
@@ -573,7 +584,6 @@
 
       <div class="acciones">
         <button type="button" class="btn btn-secundario" id="btn-ver-inicio" hidden>Ver inicio</button>
-        <button type="button" class="btn btn-secundario" id="btn-cerrar-sesion-flujo">Cerrar sesión</button>
         <button type="button" class="btn" id="btn-siguiente" disabled>Continuar</button>
       </div>
     </section>
@@ -621,6 +631,10 @@
   <main class="pantalla-completa flujo" id="pantalla-principal" hidden>
     <img class="logo-emosense" src="Imgenes/246dbbc0-ba2c-49a1-96dc-6dfb2582f18d-removebg-preview.png" alt="Logo de EmoSense">
 
+    <div class="barra-sesion">
+      <button type="button" class="btn btn-secundario" id="btn-cerrar-sesion">Cerrar sesión</button>
+    </div>
+
     <section class="contenedor-paso">
       <h1 class="titulo-principal">EmoSense</h1>
       <p class="subtitulo" id="subtitulo-principal">Tu semana emocional</p>
@@ -642,7 +656,6 @@
       <div class="detalle-dia" id="detalle-dia" aria-live="polite"></div>
 
       <div class="acciones">
-        <button type="button" class="btn btn-secundario" id="btn-cerrar-sesion">Cerrar sesión</button>
         <button type="button" class="btn" id="btn-nuevo-registro">Continuar registro</button>
       </div>
     </section>
