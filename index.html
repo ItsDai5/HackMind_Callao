@@ -207,6 +207,23 @@
     .boton-emergencia:hover { background: #b91c1c; }
     .boton-emergencia:focus-visible { outline: 3px solid #fecaca; outline-offset: 2px; }
 
+    .boton-reinicio {
+      position: fixed;
+      left: 1rem;
+      bottom: 1.25rem;
+      z-index: 2000;
+      background: none;
+      border: none;
+      padding: 0.25rem;
+      font-size: 0.8rem;
+      color: #64748b;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    .boton-reinicio:hover { color: #334155; }
+    .boton-reinicio:focus-visible { outline: 2px solid #93c5fd; outline-offset: 2px; }
+
     .overlay-emergencia { z-index: 3000; }
 
     .campo {
@@ -369,6 +386,8 @@
   </div>
 
   <button type="button" class="boton-emergencia" id="btn-emergencia">Emergencia</button>
+
+  <button type="button" class="boton-reinicio" id="btn-reiniciar">Reiniciar app</button>
 
   <script>
     const CLAVE_REGISTROS = "emosense_registros";
@@ -626,6 +645,21 @@
     const botonEmergencia = document.getElementById("btn-emergencia");
     const panelEmergencia = document.getElementById("emergencia");
     const botonCerrarEmergencia = document.getElementById("btn-cerrar-emergencia");
+    const botonReiniciar = document.getElementById("btn-reiniciar");
+
+    botonReiniciar.addEventListener("click", () => {
+      const confirmado = window.confirm("¿Borrar todos los registros y empezar desde cero?");
+      if (!confirmado) return;
+
+      localStorage.removeItem(CLAVE_REGISTROS);
+      localStorage.removeItem("emosense_registro");
+      reiniciarFlujo();
+      flujoInicial.hidden = true;
+      pantallaPrincipal.hidden = true;
+      panelEmergencia.hidden = true;
+      bienvenida.hidden = false;
+      botonComenzar.focus();
+    });
 
     botonEmergencia.addEventListener("click", () => {
       panelEmergencia.hidden = false;
