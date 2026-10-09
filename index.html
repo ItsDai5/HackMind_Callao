@@ -373,6 +373,20 @@
       margin-bottom: 0.35rem;
     }
 
+    .campo input,
+    .campo select {
+      width: 100%;
+      border: 2px solid #cbd5e1;
+      border-radius: 12px;
+      padding: 0.6rem 0.75rem;
+      font: inherit;
+      color: #1e293b;
+      background: #ffffff;
+    }
+
+    .campo input:focus-visible,
+    .campo select:focus-visible { outline: 3px solid #93c5fd; outline-offset: 2px; }
+
     .campo textarea {
       width: 100%;
       border: 2px solid #cbd5e1;
@@ -442,7 +456,69 @@
 </head>
 <body>
 
-  <div class="pantalla-completa flujo" id="flujo-inicial" role="dialog" aria-modal="true" aria-labelledby="titulo-paso-1">
+  <div class="pantalla-completa flujo" id="registro-inicial" role="dialog" aria-modal="true" aria-labelledby="titulo-registro" hidden>
+
+    <img class="logo-emosense" src="Imgenes/246dbbc0-ba2c-49a1-96dc-6dfb2582f18d-removebg-preview.png" alt="Logo de EmoSense">
+
+    <section class="contenedor-paso">
+      <h2 id="titulo-registro" tabindex="-1">Regístrate para comenzar</h2>
+      <p class="subtitulo">Completa tus datos. Se guardan solo en este dispositivo.</p>
+
+      <form id="form-registro" class="formulario">
+        <div class="campo">
+          <label for="reg-nombre">Nombre completo</label>
+          <input id="reg-nombre" type="text" autocomplete="name" required>
+        </div>
+
+        <div class="campo">
+          <label for="reg-correo">Correo institucional</label>
+          <input id="reg-correo" type="email" autocomplete="email" required>
+        </div>
+
+        <div class="campo">
+          <label for="reg-codigo">Código de estudiante</label>
+          <input id="reg-codigo" type="text" required>
+        </div>
+
+        <div class="campo">
+          <label for="reg-dni">DNI</label>
+          <input id="reg-dni" type="text" inputmode="numeric" pattern="[0-9]{8}" maxlength="8" title="Ingresa los 8 dígitos de tu DNI" required>
+        </div>
+
+        <div class="campo">
+          <label for="reg-sede">Sede</label>
+          <select id="reg-sede" required>
+            <option value="">Selecciona una sede</option>
+            <option>Trujillo</option>
+            <option>Chiclayo</option>
+            <option>Piura</option>
+            <option>Chimbote</option>
+            <option>Tarapoto</option>
+            <option>Moyobamba</option>
+            <option>Huaraz</option>
+            <option>Callao</option>
+            <option>Ate</option>
+            <option>Lima Norte</option>
+            <option>San Juan de Lurigancho</option>
+            <option>Lima Centro</option>
+          </select>
+        </div>
+
+        <div class="campo">
+          <label for="reg-contrasena">Contraseña</label>
+          <input id="reg-contrasena" type="password" minlength="6" autocomplete="new-password" required>
+        </div>
+
+        <div class="acciones">
+          <span></span>
+          <button type="submit" class="btn">Registrarme</button>
+        </div>
+      </form>
+    </section>
+
+  </div>
+
+  <div class="pantalla-completa flujo" id="flujo-inicial" role="dialog" aria-modal="true" aria-labelledby="titulo-paso-1" hidden>
 
     <img class="logo-emosense" src="Imgenes/246dbbc0-ba2c-49a1-96dc-6dfb2582f18d-removebg-preview.png" alt="Logo de EmoSense">
 
@@ -980,6 +1056,39 @@
       document.getElementById("titulo-paso-1").focus();
     });
 
+    const CLAVE_USUARIO = "emosense_usuario";
+    const registroInicial = document.getElementById("registro-inicial");
+    const formRegistro = document.getElementById("form-registro");
+
+    async function sha256(texto) {
+      const hash = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(texto));
+      return [...new Uint8Array(hash)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
+    }
+
+    formRegistro.addEventListener("submit", async (evento) => {
+      evento.preventDefault();
+      const usuario = {
+        nombre: document.getElementById("reg-nombre").value.trim(),
+        correo: document.getElementById("reg-correo").value.trim(),
+        codigo: document.getElementById("reg-codigo").value.trim(),
+        dni: document.getElementById("reg-dni").value.trim(),
+        sede: document.getElementById("reg-sede").value,
+        claveHash: await sha256(document.getElementById("reg-contrasena").value)
+      };
+      localStorage.setItem(CLAVE_USUARIO, JSON.stringify(usuario));
+      formRegistro.reset();
+      registroInicial.hidden = true;
+      flujoInicial.hidden = false;
+      document.getElementById("titulo-paso-1").focus();
+    });
+
+    if (localStorage.getItem(CLAVE_USUARIO)) {
+      flujoInicial.hidden = false;
+    } else {
+      registroInicial.hidden = false;
+      document.getElementById("titulo-registro").focus();
+    }
+
     const botonEmergencia = document.getElementById("btn-emergencia");
     const panelEmergencia = document.getElementById("emergencia");
     const botonCerrarEmergencia = document.getElementById("btn-cerrar-emergencia");
@@ -991,11 +1100,13 @@
 
       localStorage.removeItem(CLAVE_REGISTROS);
       localStorage.removeItem("emosense_registro");
+      localStorage.removeItem(CLAVE_USUARIO);
       reiniciarFlujo();
       pantallaPrincipal.hidden = true;
       panelEmergencia.hidden = true;
-      flujoInicial.hidden = false;
-      document.getElementById("titulo-paso-1").focus();
+      flujoInicial.hidden = true;
+      registroInicial.hidden = false;
+      document.getElementById("titulo-registro").focus();
     });
 
     botonEmergencia.addEventListener("click", () => {
