@@ -547,7 +547,7 @@
         <p id="login-error" class="mensaje-error" hidden>Los datos no coinciden. Revisa tu correo y tu contraseña.</p>
 
         <div class="acciones">
-          <span></span>
+          <button type="button" class="btn btn-secundario" id="btn-ir-registro">Crear cuenta</button>
           <button type="submit" class="btn">Iniciar sesión</button>
         </div>
       </form>
@@ -1195,6 +1195,12 @@
       iniciarSesion();
     });
 
+    document.getElementById("btn-ir-registro").addEventListener("click", () => {
+      loginInicial.hidden = true;
+      registroInicial.hidden = false;
+      document.getElementById("titulo-registro").focus();
+    });
+
     document.getElementById("btn-cerrar-sesion").addEventListener("click", () => {
       sessionStorage.removeItem(CLAVE_SESION);
       pantallaPrincipal.hidden = true;
@@ -1202,7 +1208,8 @@
       document.getElementById("titulo-login").focus();
     });
 
-    if (!localStorage.getItem(CLAVE_USUARIO)) {
+    const usuarioGuardado = JSON.parse(localStorage.getItem(CLAVE_USUARIO) || "null");
+    if (!usuarioGuardado || !usuarioGuardado.claveHash) {
       registroInicial.hidden = false;
       document.getElementById("titulo-registro").focus();
     } else if (sessionStorage.getItem(CLAVE_SESION)) {
