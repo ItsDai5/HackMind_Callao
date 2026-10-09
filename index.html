@@ -179,12 +179,27 @@
       margin: 0 0 0.5rem;
     }
 
-    .bienvenida-paso { margin-bottom: 1.5rem; }
+    .flujo {
+      flex-direction: column;
+      justify-content: flex-start;
+      gap: 1.25rem;
+    }
+
+    .bienvenida-paso {
+      text-align: center;
+      max-width: 720px;
+      width: 100%;
+    }
 
     .bienvenida-titulo {
       margin: 0 0 0.5rem;
       font-size: 1.75rem;
       color: #1e3a8a;
+    }
+
+    .bienvenida-paso .subtitulo {
+      margin: 0;
+      color: #334155;
     }
 
     .contenedor-paso h2 {
@@ -329,14 +344,14 @@
 </head>
 <body>
 
-  <div class="pantalla-completa" id="flujo-inicial" role="dialog" aria-modal="true" aria-labelledby="titulo-paso-1">
+  <div class="pantalla-completa flujo" id="flujo-inicial" role="dialog" aria-modal="true" aria-labelledby="titulo-paso-1">
+
+    <div class="bienvenida-paso">
+      <h1 class="bienvenida-titulo">¡Bienvenido/a a EmoSense!</h1>
+      <p class="subtitulo">Un espacio para expresar tus emociones y cuidar tu bienestar emocional. 🌷</p>
+    </div>
 
     <section class="contenedor-paso" id="paso-1">
-      <div class="bienvenida-paso">
-        <h1 class="bienvenida-titulo">¡Bienvenido/a a EmoSense!</h1>
-        <p class="subtitulo">Un espacio para expresar tus emociones y cuidar tu bienestar emocional. 🌷</p>
-      </div>
-
       <p class="indicador">Paso 1 de 3</p>
       <h2 id="titulo-paso-1" tabindex="-1">¿Qué emoción sientes ahora?</h2>
       <p class="subtitulo">Elige una o varias emociones que describan cómo te sientes.</p>
