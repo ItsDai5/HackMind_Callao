@@ -402,7 +402,7 @@
       <div class="emociones" id="lista-emociones"></div>
 
       <div class="acciones">
-        <span></span>
+        <button type="button" class="btn btn-secundario" id="btn-ver-inicio" hidden>Ver inicio</button>
         <button type="button" class="btn" id="btn-siguiente" disabled>Continuar</button>
       </div>
     </section>
@@ -526,6 +526,7 @@
     const listaIntensidades = document.getElementById("lista-intensidades");
     const pantallaPrincipal = document.getElementById("pantalla-principal");
     const botonNuevoRegistro = document.getElementById("btn-nuevo-registro");
+    const botonVerInicio = document.getElementById("btn-ver-inicio");
     const quePensaste = document.getElementById("que-pensaste");
     const queHiciste = document.getElementById("que-hiciste");
 
@@ -833,7 +834,13 @@
       return (texto || "").split("\n").map((linea) => linea.trim()).filter(Boolean);
     }
 
+    function actualizarBotonVerInicio() {
+      const hoy = fechaLocal(new Date());
+      botonVerInicio.hidden = !leerRegistros().some((registro) => registro.fecha === hoy);
+    }
+
     function reiniciarFlujo() {
+      actualizarBotonVerInicio();
       emocionesSeleccionadas = [];
       intensidades = {};
       listaEmociones.querySelectorAll(".emocion").forEach((boton) => {
@@ -872,6 +879,9 @@
       localStorage.setItem(CLAVE_REGISTROS, JSON.stringify(registros));
       mostrarPantallaPrincipal();
     });
+
+    botonVerInicio.addEventListener("click", mostrarPantallaPrincipal);
+    actualizarBotonVerInicio();
 
     botonNuevoRegistro.addEventListener("click", () => {
       reiniciarFlujo();
