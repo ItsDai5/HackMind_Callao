@@ -147,6 +147,39 @@
 
     .vista-boton:focus-visible { outline: 3px solid #93c5fd; outline-offset: 2px; }
 
+    .navegar-anio {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .navegar-anio[hidden] { display: none; }
+
+    .navegar-anio span {
+      min-width: 5ch;
+      text-align: center;
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: #1e3a8a;
+    }
+
+    .flecha-anio {
+      width: 44px;
+      height: 44px;
+      border: none;
+      border-radius: 50%;
+      background: #dbeafe;
+      color: #1e3a8a;
+      font-size: 1.5rem;
+      line-height: 1;
+      cursor: pointer;
+    }
+
+    .flecha-anio:hover { background: #bfdbfe; }
+    .flecha-anio:focus-visible { outline: 3px solid #93c5fd; outline-offset: 2px; }
+
     .semana.vista-mes { grid-template-columns: repeat(auto-fit, minmax(70px, 1fr)); gap: 0.4rem; }
     .semana.vista-mes .dia { min-height: 92px; padding: 0.4rem 0.2rem; font-size: 0.75rem; }
     .semana.vista-mes .dia-numero { font-size: 1.4rem; }
@@ -483,6 +516,12 @@
         <button type="button" class="vista-boton" data-vista="anio" aria-pressed="false">Año</button>
       </div>
 
+      <div class="navegar-anio" id="navegar-anio" hidden>
+        <button type="button" class="flecha-anio" id="anio-anterior" aria-label="Año anterior">‹</button>
+        <span id="anio-visto"></span>
+        <button type="button" class="flecha-anio" id="anio-siguiente" aria-label="Año siguiente">›</button>
+      </div>
+
       <div class="semana" id="semana"></div>
 
       <div class="detalle-dia" id="detalle-dia" aria-live="polite"></div>
@@ -679,6 +718,7 @@
     };
 
     let vistaActual = "semana";
+    let anioVisto = new Date().getFullYear();
     let periodoSeleccionado = null;
 
     function clavePeriodo(periodo) {
@@ -711,10 +751,10 @@
         }
       } else {
         for (let mes = 0; mes < 12; mes++) {
-          const inicio = new Date(hoy.getFullYear(), mes, 1);
+          const inicio = new Date(anioVisto, mes, 1);
           periodos.push({
             inicio,
-            fin: new Date(hoy.getFullYear(), mes + 1, 0),
+            fin: new Date(anioVisto, mes + 1, 0),
             etiqueta: inicio.toLocaleDateString("es", { month: "short" }),
             numero: null,
             titulo: inicio.toLocaleDateString("es", { month: "long", year: "numeric" })
@@ -788,18 +828,29 @@
       let subtitulo = SUBTITULOS[vistaActual];
       if (vistaActual === "mes") {
         subtitulo += `: ${hoy.toLocaleDateString("es", { month: "long", year: "numeric" })}`;
-      } else if (vistaActual === "anio") {
-        subtitulo += `: ${hoy.getFullYear()}`;
       }
       document.getElementById("subtitulo-principal").textContent = subtitulo;
+      const navegarAnio = document.getElementById("navegar-anio");
+      navegarAnio.hidden = vistaActual !== "anio";
+      document.getElementById("anio-visto").textContent = anioVisto;
       renderCalendario();
       renderDetalle();
     }
+
+    function cambiarAnio(delta) {
+      anioVisto += delta;
+      periodoSeleccionado = null;
+      actualizarVistas();
+    }
+
+    document.getElementById("anio-anterior").addEventListener("click", () => cambiarAnio(-1));
+    document.getElementById("anio-siguiente").addEventListener("click", () => cambiarAnio(1));
 
     document.querySelectorAll(".vista-boton").forEach((boton) => {
       boton.addEventListener("click", () => {
         vistaActual = boton.dataset.vista;
         periodoSeleccionado = null;
+        anioVisto = new Date().getFullYear();
         actualizarVistas();
       });
     });
