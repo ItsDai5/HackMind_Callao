@@ -531,12 +531,12 @@
 
     <section class="contenedor-paso">
       <h2 id="titulo-login" tabindex="-1">Inicia sesión</h2>
-      <p class="subtitulo">Ingresa tu correo institucional o tu DNI y tu contraseña.</p>
+      <p class="subtitulo">Ingresa tu correo institucional y tu contraseña.</p>
 
       <form id="form-login" class="formulario">
         <div class="campo">
-          <label for="login-identificador">Correo institucional o DNI</label>
-          <input id="login-identificador" type="text" autocomplete="username" required>
+          <label for="login-identificador">Correo institucional</label>
+          <input id="login-identificador" type="email" autocomplete="username" required>
         </div>
 
         <div class="campo">
@@ -544,7 +544,7 @@
           <input id="login-contrasena" type="password" autocomplete="current-password" required>
         </div>
 
-        <p id="login-error" class="mensaje-error" hidden>Los datos no coinciden. Revisa tu correo o DNI y tu contraseña.</p>
+        <p id="login-error" class="mensaje-error" hidden>Los datos no coinciden. Revisa tu correo y tu contraseña.</p>
 
         <div class="acciones">
           <span></span>
@@ -1184,7 +1184,7 @@
       const contrasena = document.getElementById("login-contrasena").value;
 
       const coincideIdentificador = usuario !== null &&
-        (identificador.toLowerCase() === usuario.correo.toLowerCase() || identificador === usuario.dni);
+        identificador.toLowerCase() === usuario.correo.toLowerCase();
       const coincideClave = usuario !== null && Boolean(usuario.claveHash) &&
         (await sha256(contrasena)) === usuario.claveHash;
 
