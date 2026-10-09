@@ -1,5 +1,7 @@
-// Edge Function: recibe el registro del día de un estudiante y lo guarda en
-// la tabla registros_emocionales. Usa la clave de servicio (solo en el servidor).
+// Edge Function: recibe datos de la app y los guarda en Supabase con la clave
+// de servicio (solo en el servidor).
+//  - tipo "usuario": guarda el estudiante en la tabla usuarios.
+//  - cualquier otro caso: guarda el registro del día en registros_emocionales.
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 const cabeceras = {
@@ -17,13 +19,18 @@ function esTexto(valor: unknown, maximo: number) {
   return typeof valor === "string" && valor.length <= maximo;
 }
 
-function validar(datos: any): string | null {
-  if (!datos || typeof datos !== "object") return "Datos inválidos";
+function validarUsuario(datos: any): string | null {
   if (!esTexto(datos.nombre, 120) || !datos.nombre.trim()) return "Nombre inválido";
   if (!esTexto(datos.correo, 120) || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(datos.correo)) return "Correo inválido";
   if (!esTexto(datos.codigo, 20) || !datos.codigo.trim()) return "Código inválido";
   if (typeof datos.dni !== "string" || !/^\d{8}$/.test(datos.dni)) return "DNI inválido";
-  if (!esTexto(datos.sede, 60)) return "Sede inválida";
+  if (!esTexto(datos.sede, 60) || !datos.sede) return "Sede inválida";
+  return null;
+}
+
+function validarRegistro(datos: any): string | null {
+  const errorUsuario = validarUsuario(datos);
+  if (errorUsuario) return errorUsuario;
   if (typeof datos.fecha !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(datos.fecha)) return "Fecha inválida";
   if (!Array.isArray(datos.emociones) || datos.emociones.length > 16) return "Emociones inválidas";
   for (const e of datos.emociones) {
@@ -46,13 +53,34 @@ Deno.serve(async (req) => {
     return respuesta({ error: "JSON inválido" }, 400);
   }
 
-  const error = validar(datos);
-  if (error) return respuesta({ error }, 400);
+  if (!datos || typeof datos !== "object") return respuesta({ error: "Datos inválidos" }, 400);
 
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL")!,
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
   );
+
+  if (datos.tipo === "usuario") {
+    const error = validarUsuario(datos);
+    if (error) return respuesta({ error }, 400);
+
+    const { error: errorBD } = await supabase.from("usuarios").upsert(
+      {
+        nombre: datos.nombre.trim(),
+        correo: datos.correo.trim(),
+        dni: datos.dni,
+        codigo_estudiante: datos.codigo.trim(),
+        sede: datos.sede,
+      },
+      { onConflict: "dni" },
+    );
+
+    if (errorBD) return respuesta({ error: errorBD.message }, 500);
+    return respuesta({ ok: true });
+  }
+
+  const error = validarRegistro(datos);
+  if (error) return respuesta({ error }, 400);
 
   const { error: errorBD } = await supabase.from("registros_emocionales").upsert(
     {

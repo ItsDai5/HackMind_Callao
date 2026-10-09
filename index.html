@@ -1050,10 +1050,7 @@
       mostrarPantallaPrincipal();
     });
 
-    function enviarRegistro(registro) {
-      const usuario = JSON.parse(localStorage.getItem(CLAVE_USUARIO) || "null");
-      if (!usuario) return;
-
+    function enviarASupabase(datos, descripcion) {
       fetch(SUPABASE_FUNCION_URL, {
         method: "POST",
         headers: {
@@ -1061,19 +1058,26 @@
           apikey: SUPABASE_CLAVE_PUBLICA,
           Authorization: `Bearer ${SUPABASE_CLAVE_PUBLICA}`
         },
-        body: JSON.stringify({
-          nombre: usuario.nombre,
-          correo: usuario.correo,
-          codigo: usuario.codigo,
-          dni: usuario.dni,
-          sede: usuario.sede,
-          ...registro
-        })
+        body: JSON.stringify(datos)
       })
         .then(async (respuesta) => {
-          if (!respuesta.ok) console.error("No se guardó el registro en el servidor:", await respuesta.text());
+          if (!respuesta.ok) console.error(`No se guardó ${descripcion} en el servidor:`, await respuesta.text());
         })
-        .catch((error) => console.error("No se pudo conectar con el servidor:", error));
+        .catch((error) => console.error(`No se pudo conectar con el servidor (${descripcion}):`, error));
+    }
+
+    function enviarRegistro(registro) {
+      const usuario = JSON.parse(localStorage.getItem(CLAVE_USUARIO) || "null");
+      if (!usuario) return;
+
+      enviarASupabase({
+        nombre: usuario.nombre,
+        correo: usuario.correo,
+        codigo: usuario.codigo,
+        dni: usuario.dni,
+        sede: usuario.sede,
+        ...registro
+      }, "el registro del día");
     }
 
     botonVerInicio.addEventListener("click", mostrarPantallaPrincipal);
@@ -1106,6 +1110,14 @@
         claveHash: await sha256(document.getElementById("reg-contrasena").value)
       };
       localStorage.setItem(CLAVE_USUARIO, JSON.stringify(usuario));
+      enviarASupabase({
+        tipo: "usuario",
+        nombre: usuario.nombre,
+        correo: usuario.correo,
+        codigo: usuario.codigo,
+        dni: usuario.dni,
+        sede: usuario.sede
+      }, "el usuario");
       formRegistro.reset();
       registroInicial.hidden = true;
       flujoInicial.hidden = false;
