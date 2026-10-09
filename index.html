@@ -587,7 +587,7 @@
       return mejor;
     }
 
-    let diaSeleccionado = new Date();
+    let diaSeleccionado = null;
 
     function renderSemana() {
       const contenedorSemana = document.getElementById("semana");
@@ -605,7 +605,7 @@
         const caja = document.createElement("button");
         caja.type = "button";
         caja.className = "dia";
-        caja.setAttribute("aria-pressed", String(fechaLocal(fecha) === fechaLocal(diaSeleccionado)));
+        caja.setAttribute("aria-pressed", String(diaSeleccionado !== null && fechaLocal(fecha) === fechaLocal(diaSeleccionado)));
         if (fechaLocal(fecha) === fechaLocal(hoy)) {
           caja.classList.add("hoy");
         }
@@ -630,7 +630,8 @@
         caja.appendChild(texto);
 
         caja.addEventListener("click", () => {
-          diaSeleccionado = fecha;
+          const yaSeleccionado = diaSeleccionado !== null && fechaLocal(diaSeleccionado) === fechaLocal(fecha);
+          diaSeleccionado = yaSeleccionado ? null : fecha;
           renderSemana();
           renderDetalle();
         });
@@ -641,6 +642,10 @@
 
     function renderDetalle() {
       const contenedorDetalle = document.getElementById("detalle-dia");
+      contenedorDetalle.hidden = diaSeleccionado === null;
+      contenedorDetalle.innerHTML = "";
+      if (diaSeleccionado === null) return;
+
       const clave = fechaLocal(diaSeleccionado);
       const delDia = leerRegistros().filter((registro) => registro.fecha === clave);
       const titulo = diaSeleccionado.toLocaleDateString("es", { weekday: "long", day: "numeric", month: "long" });
@@ -684,7 +689,7 @@
 
     function mostrarPantallaPrincipal() {
       flujoInicial.hidden = true;
-      diaSeleccionado = new Date();
+      diaSeleccionado = null;
       renderSemana();
       renderDetalle();
       pantallaPrincipal.hidden = false;
