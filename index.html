@@ -122,6 +122,38 @@
       cursor: pointer;
     }
 
+    .vistas {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .vista-boton {
+      border: 2px solid #1e3a8a;
+      background: #ffffff;
+      color: #1e3a8a;
+      border-radius: 999px;
+      padding: 0.4rem 1.1rem;
+      font: inherit;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .vista-boton[aria-pressed="true"] {
+      background: #1e3a8a;
+      color: #ffffff;
+    }
+
+    .vista-boton:focus-visible { outline: 3px solid #93c5fd; outline-offset: 2px; }
+
+    .semana.vista-mes { grid-template-columns: repeat(auto-fit, minmax(70px, 1fr)); gap: 0.4rem; }
+    .semana.vista-mes .dia { min-height: 92px; padding: 0.4rem 0.2rem; font-size: 0.75rem; }
+    .semana.vista-mes .dia-numero { font-size: 1.4rem; }
+
+    .semana.vista-anio { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.6rem; }
+    .semana.vista-anio .dia { min-height: 110px; font-size: 0.8rem; }
+
     .dia:focus-visible { outline: 3px solid #93c5fd; outline-offset: 2px; }
     .dia[aria-pressed="true"] { outline: 3px solid #1e3a8a; outline-offset: 2px; }
     .dia.hoy .dia-nombre-semana { color: #1e3a8a; }
@@ -418,7 +450,13 @@
   <main class="pantalla-completa" id="pantalla-principal" hidden>
     <section class="contenedor-paso">
       <h1 class="titulo-principal">EmoSense</h1>
-      <p class="subtitulo">Tu semana emocional</p>
+      <p class="subtitulo" id="subtitulo-principal">Tu semana emocional</p>
+
+      <div class="vistas" role="group" aria-label="Ver registros por">
+        <button type="button" class="vista-boton" data-vista="semana" aria-pressed="true">Semana</button>
+        <button type="button" class="vista-boton" data-vista="mes" aria-pressed="false">Mes</button>
+        <button type="button" class="vista-boton" data-vista="anio" aria-pressed="false">Año</button>
+      </div>
 
       <div class="semana" id="semana"></div>
 
@@ -608,36 +646,91 @@
       return mejor;
     }
 
-    let diaSeleccionado = null;
+    const SUBTITULOS = {
+      semana: "Tu semana emocional",
+      mes: "Tu mes emocional",
+      anio: "Tu año emocional"
+    };
 
-    function renderSemana() {
+    let vistaActual = "semana";
+    let periodoSeleccionado = null;
+
+    function clavePeriodo(periodo) {
+      return `${fechaLocal(periodo.inicio)}|${fechaLocal(periodo.fin)}`;
+    }
+
+    function periodosDeLaVista(hoy) {
+      const periodos = [];
+      const agregarDia = (fecha, etiqueta, numero) => {
+        periodos.push({
+          inicio: fecha,
+          fin: fecha,
+          etiqueta,
+          numero,
+          titulo: fecha.toLocaleDateString("es", { weekday: "long", day: "numeric", month: "long" })
+        });
+      };
+
+      if (vistaActual === "semana") {
+        const lunes = lunesDeLaSemana(hoy);
+        DIAS_SEMANA.forEach((nombreDia, indice) => {
+          const fecha = new Date(lunes);
+          fecha.setDate(lunes.getDate() + indice);
+          agregarDia(fecha, nombreDia, fecha.getDate());
+        });
+      } else if (vistaActual === "mes") {
+        const diasDelMes = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0).getDate();
+        for (let dia = 1; dia <= diasDelMes; dia++) {
+          agregarDia(new Date(hoy.getFullYear(), hoy.getMonth(), dia), "", dia);
+        }
+      } else {
+        for (let mes = 0; mes < 12; mes++) {
+          const inicio = new Date(hoy.getFullYear(), mes, 1);
+          periodos.push({
+            inicio,
+            fin: new Date(hoy.getFullYear(), mes + 1, 0),
+            etiqueta: inicio.toLocaleDateString("es", { month: "short" }),
+            numero: null,
+            titulo: inicio.toLocaleDateString("es", { month: "long", year: "numeric" })
+          });
+        }
+      }
+      return periodos;
+    }
+
+    function renderCalendario() {
       const contenedorSemana = document.getElementById("semana");
       const registros = leerRegistros();
-      const hoy = new Date();
-      const lunes = lunesDeLaSemana(hoy);
+      const hoy = fechaLocal(new Date());
+      contenedorSemana.className = `semana vista-${vistaActual}`;
       contenedorSemana.innerHTML = "";
 
-      DIAS_SEMANA.forEach((nombreDia, indice) => {
-        const fecha = new Date(lunes);
-        fecha.setDate(lunes.getDate() + indice);
-        const delDia = registros.filter((registro) => registro.fecha === fechaLocal(fecha));
-        const masIntensa = emocionMasIntensa(delDia);
+      periodosDeLaVista(new Date()).forEach((periodo) => {
+        const inicioClave = fechaLocal(periodo.inicio);
+        const finClave = fechaLocal(periodo.fin);
+        const delPeriodo = registros.filter((registro) => registro.fecha >= inicioClave && registro.fecha <= finClave);
+        const masIntensa = emocionMasIntensa(delPeriodo);
 
         const caja = document.createElement("button");
         caja.type = "button";
         caja.className = "dia";
-        caja.setAttribute("aria-pressed", String(diaSeleccionado !== null && fechaLocal(fecha) === fechaLocal(diaSeleccionado)));
-        if (fechaLocal(fecha) === fechaLocal(hoy)) {
+        caja.setAttribute("aria-pressed", String(periodoSeleccionado !== null && clavePeriodo(periodoSeleccionado) === clavePeriodo(periodo)));
+        if (hoy >= inicioClave && hoy <= finClave) {
           caja.classList.add("hoy");
         }
 
-        const encabezado = document.createElement("span");
-        encabezado.className = "dia-nombre-semana";
-        encabezado.textContent = nombreDia;
-        const numero = document.createElement("span");
-        numero.className = "dia-numero";
-        numero.textContent = fecha.getDate();
-        caja.append(encabezado, numero);
+        if (periodo.etiqueta) {
+          const etiqueta = document.createElement("span");
+          etiqueta.className = "dia-nombre-semana";
+          etiqueta.textContent = periodo.etiqueta;
+          caja.appendChild(etiqueta);
+        }
+        if (periodo.numero !== null) {
+          const numero = document.createElement("span");
+          numero.className = "dia-numero";
+          numero.textContent = periodo.numero;
+          caja.appendChild(numero);
+        }
 
         const texto = document.createElement("span");
         texto.className = "dia-emocion";
@@ -651,9 +744,9 @@
         caja.appendChild(texto);
 
         caja.addEventListener("click", () => {
-          const yaSeleccionado = diaSeleccionado !== null && fechaLocal(diaSeleccionado) === fechaLocal(fecha);
-          diaSeleccionado = yaSeleccionado ? null : fecha;
-          renderSemana();
+          const yaSeleccionado = periodoSeleccionado !== null && clavePeriodo(periodoSeleccionado) === clavePeriodo(periodo);
+          periodoSeleccionado = yaSeleccionado ? null : periodo;
+          renderCalendario();
           renderDetalle();
         });
 
@@ -661,15 +754,33 @@
       });
     }
 
+    function actualizarVistas() {
+      document.querySelectorAll(".vista-boton").forEach((boton) => {
+        boton.setAttribute("aria-pressed", String(boton.dataset.vista === vistaActual));
+      });
+      document.getElementById("subtitulo-principal").textContent = SUBTITULOS[vistaActual];
+      renderCalendario();
+      renderDetalle();
+    }
+
+    document.querySelectorAll(".vista-boton").forEach((boton) => {
+      boton.addEventListener("click", () => {
+        vistaActual = boton.dataset.vista;
+        periodoSeleccionado = null;
+        actualizarVistas();
+      });
+    });
+
     function renderDetalle() {
       const contenedorDetalle = document.getElementById("detalle-dia");
-      contenedorDetalle.hidden = diaSeleccionado === null;
+      contenedorDetalle.hidden = periodoSeleccionado === null;
       contenedorDetalle.innerHTML = "";
-      if (diaSeleccionado === null) return;
+      if (periodoSeleccionado === null) return;
 
-      const clave = fechaLocal(diaSeleccionado);
-      const delDia = leerRegistros().filter((registro) => registro.fecha === clave);
-      const titulo = diaSeleccionado.toLocaleDateString("es", { weekday: "long", day: "numeric", month: "long" });
+      const inicioClave = fechaLocal(periodoSeleccionado.inicio);
+      const finClave = fechaLocal(periodoSeleccionado.fin);
+      const delDia = leerRegistros().filter((registro) => registro.fecha >= inicioClave && registro.fecha <= finClave);
+      const titulo = periodoSeleccionado.titulo;
 
       contenedorDetalle.innerHTML = "";
       const encabezado = document.createElement("h3");
@@ -688,7 +799,7 @@
 
       if (emociones.length === 0 && pensamientos.length === 0 && acciones.length === 0) {
         const aviso = document.createElement("p");
-        aviso.textContent = "No hay registros este día.";
+        aviso.textContent = "No hay registros en este periodo.";
         contenedorDetalle.appendChild(aviso);
         return;
       }
@@ -738,9 +849,8 @@
 
     function mostrarPantallaPrincipal() {
       flujoInicial.hidden = true;
-      diaSeleccionado = null;
-      renderSemana();
-      renderDetalle();
+      periodoSeleccionado = null;
+      actualizarVistas();
       pantallaPrincipal.hidden = false;
       botonNuevoRegistro.focus();
     }
