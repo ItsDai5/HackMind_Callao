@@ -10,6 +10,7 @@
     body {
       margin: 0;
       min-height: 100vh;
+      padding-bottom: 5rem;
       font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
       background: linear-gradient(135deg, #dbeafe, #fee2e2);
       display: flex;
@@ -127,24 +128,69 @@
     }
 
     .emocion {
-      background: #f8fafc;
-      border: 2px solid #cbd5e1;
+      background: #ffffff;
+      border: 2px solid var(--color);
       border-radius: 12px;
       padding: 0.9rem 0.5rem;
       font-size: 0.95rem;
-      color: #1e293b;
+      color: var(--color);
       cursor: pointer;
-      transition: border-color 0.2s ease, background 0.2s ease;
+      transition: filter 0.2s ease, background 0.2s ease;
     }
 
-    .emocion:hover { border-color: #93c5fd; }
+    .emocion:hover { filter: brightness(0.92); }
     .emocion[aria-pressed="true"] {
-      border-color: #1e3a8a;
-      background: #dbeafe;
-      color: #1e3a8a;
+      background: var(--color);
+      color: #ffffff;
       font-weight: 600;
     }
     .emocion:focus-visible { outline: 3px solid #93c5fd; outline-offset: 2px; }
+
+    .boton-emergencia {
+      position: fixed;
+      left: 50%;
+      bottom: 1rem;
+      transform: translateX(-50%);
+      z-index: 2000;
+      background: #dc2626;
+      color: #ffffff;
+      border: none;
+      border-radius: 999px;
+      padding: 0.85rem 1.75rem;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(220, 38, 38, 0.4);
+    }
+
+    .boton-emergencia:hover { background: #b91c1c; }
+    .boton-emergencia:focus-visible { outline: 3px solid #fecaca; outline-offset: 2px; }
+
+    .overlay-emergencia { z-index: 3000; }
+
+    .campo {
+      text-align: left;
+      margin-bottom: 1rem;
+    }
+
+    .campo label {
+      display: block;
+      font-weight: 600;
+      color: #1e3a8a;
+      margin-bottom: 0.35rem;
+    }
+
+    .campo textarea {
+      width: 100%;
+      border: 2px solid #cbd5e1;
+      border-radius: 12px;
+      padding: 0.6rem 0.75rem;
+      font: inherit;
+      color: #1e293b;
+      resize: vertical;
+    }
+
+    .campo textarea:focus-visible { outline: 3px solid #93c5fd; outline-offset: 2px; }
 
     .acciones {
       display: flex;
@@ -210,7 +256,7 @@
 
       <div class="acciones">
         <span></span>
-        <button type="button" class="btn" id="btn-siguiente" disabled>Siguiente</button>
+        <button type="button" class="btn" id="btn-siguiente" disabled>Continuar</button>
       </div>
     </section>
 
@@ -225,22 +271,64 @@
         <span>Muy intensa (10)</span>
       </div>
 
+      <div class="campo">
+        <label for="que-pensaste">¿Qué pensaste?</label>
+        <textarea id="que-pensaste" rows="3"></textarea>
+      </div>
+
+      <div class="campo">
+        <label for="que-hiciste">¿Qué hiciste?</label>
+        <textarea id="que-hiciste" rows="3"></textarea>
+      </div>
+
       <div class="acciones">
         <button type="button" class="btn btn-secundario" id="btn-atras">Atrás</button>
-        <button type="button" class="btn" id="btn-finalizar">Finalizar</button>
+        <button type="button" class="btn" id="btn-finalizar">Guardar registro</button>
       </div>
     </section>
 
   </div>
 
+  <div class="overlay overlay-emergencia" id="emergencia" role="dialog" aria-modal="true" aria-labelledby="titulo-emergencia" hidden>
+    <div class="modal">
+      <h1 id="titulo-emergencia">¿Necesitas ayuda ahora?</h1>
+      <p>
+        Si estás en peligro o sientes que no puedes esperar, pide ayuda de inmediato:<br><br>
+        <strong>105</strong> · Policía Nacional<br>
+        <strong>106</strong> · SAMU<br>
+        <strong>113, opción 5</strong> · Línea de salud mental (MINSA)
+      </p>
+      <button type="button" class="btn" id="btn-cerrar-emergencia">Cerrar</button>
+    </div>
+  </div>
+
+  <button type="button" class="boton-emergencia" id="btn-emergencia">🆘 Emergencia</button>
+
   <script>
     const CLAVE_REGISTRO = "emosense_registro";
 
     const EMOCIONES = [
-      "Alegría/Felicidad", "Tristeza", "Miedo", "Ira/Enojo", "Asco/Aversión",
-      "Frustración", "Sobrecarga", "Soledad", "Estrés", "Ansiedad", "Sensible",
-      "Seguridad", "Irritabilidad", "Entusiasmo", "Inseguridad", "Indiferencia"
+      { nombre: "Alegría/Felicidad", color: "#b45309" },
+      { nombre: "Tristeza", color: "#2563eb" },
+      { nombre: "Miedo", color: "#6d28d9" },
+      { nombre: "Ira/Enojo", color: "#c2410c" },
+      { nombre: "Asco/Aversión", color: "#4d7c0f" },
+      { nombre: "Frustración", color: "#be185d" },
+      { nombre: "Sobrecarga", color: "#115e59" },
+      { nombre: "Soledad", color: "#475569" },
+      { nombre: "Estrés", color: "#a16207" },
+      { nombre: "Ansiedad", color: "#4338ca" },
+      { nombre: "Sensible", color: "#a21caf" },
+      { nombre: "Seguridad", color: "#15803d" },
+      { nombre: "Irritabilidad", color: "#9f1239" },
+      { nombre: "Entusiasmo", color: "#0e7490" },
+      { nombre: "Inseguridad", color: "#57534e" },
+      { nombre: "Indiferencia", color: "#6b7280" }
     ];
+
+    function colorDe(nombre) {
+      return EMOCIONES.find((emocion) => emocion.nombre === nombre).color;
+    }
 
     const bienvenida = document.getElementById("bienvenida");
     const botonComenzar = document.getElementById("btn-comenzar");
@@ -252,15 +340,18 @@
     const botonAtras = document.getElementById("btn-atras");
     const botonFinalizar = document.getElementById("btn-finalizar");
     const listaIntensidades = document.getElementById("lista-intensidades");
+    const quePensaste = document.getElementById("que-pensaste");
+    const queHiciste = document.getElementById("que-hiciste");
 
     let emocionesSeleccionadas = [];
     let intensidades = {};
 
-    EMOCIONES.forEach((nombre) => {
+    EMOCIONES.forEach(({ nombre, color }) => {
       const boton = document.createElement("button");
       boton.type = "button";
       boton.className = "emocion";
       boton.textContent = nombre;
+      boton.style.setProperty("--color", color);
       boton.setAttribute("aria-pressed", "false");
       boton.addEventListener("click", () => alternarEmocion(nombre, boton));
       listaEmociones.appendChild(boton);
@@ -299,6 +390,7 @@
         cabecera.className = "intensidad-cabecera";
         const etiqueta = document.createElement("span");
         etiqueta.textContent = nombre;
+        etiqueta.style.color = colorDe(nombre);
         const valor = document.createElement("span");
         valor.className = "intensidad-valor";
         valor.textContent = intensidades[nombre];
@@ -338,9 +430,25 @@
         emociones: emocionesSeleccionadas.map((nombre) => ({
           emocion: nombre,
           intensidad: intensidades[nombre]
-        }))
+        })),
+        pensamiento: quePensaste.value.trim(),
+        accion: queHiciste.value.trim()
       }));
       flujoInicial.hidden = true;
+    });
+
+    const botonEmergencia = document.getElementById("btn-emergencia");
+    const panelEmergencia = document.getElementById("emergencia");
+    const botonCerrarEmergencia = document.getElementById("btn-cerrar-emergencia");
+
+    botonEmergencia.addEventListener("click", () => {
+      panelEmergencia.hidden = false;
+      botonCerrarEmergencia.focus();
+    });
+
+    botonCerrarEmergencia.addEventListener("click", () => {
+      panelEmergencia.hidden = true;
+      botonEmergencia.focus();
     });
   </script>
 
