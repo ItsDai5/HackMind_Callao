@@ -153,11 +153,18 @@
       flex-wrap: wrap;
     }
 
+    .intensidad-item { margin-bottom: 1.25rem; }
+
+    .intensidad-cabecera {
+      display: flex;
+      justify-content: space-between;
+      font-weight: 600;
+      color: #1e3a8a;
+      margin-bottom: 0.25rem;
+    }
+
     .intensidad-valor {
-      font-size: 2.5rem;
-      font-weight: 700;
       color: #dc2626;
-      margin: 0.5rem 0;
     }
 
     input[type="range"] {
@@ -209,11 +216,10 @@
 
     <section class="contenedor-paso" id="paso-2" hidden>
       <p class="indicador">Paso 2 de 2</p>
-      <h2>¿Qué tan intensa es?</h2>
-      <p class="subtitulo">Emociones seleccionadas: <strong id="emocion-elegida"></strong></p>
+      <h2>¿Qué tan intensa es cada emoción?</h2>
+      <p class="subtitulo">Ajusta la intensidad de cada emoción seleccionada.</p>
 
-      <div class="intensidad-valor" id="valor-intensidad">5</div>
-      <input type="range" id="intensidad" min="1" max="10" value="5" aria-label="Intensidad de la emoción">
+      <div id="lista-intensidades"></div>
       <div class="escala">
         <span>Leve (1)</span>
         <span>Muy intensa (10)</span>
@@ -246,11 +252,10 @@
     const botonSiguiente = document.getElementById("btn-siguiente");
     const botonAtras = document.getElementById("btn-atras");
     const botonFinalizar = document.getElementById("btn-finalizar");
-    const emocionElegida = document.getElementById("emocion-elegida");
-    const rangoIntensidad = document.getElementById("intensidad");
-    const valorIntensidad = document.getElementById("valor-intensidad");
+    const listaIntensidades = document.getElementById("lista-intensidades");
 
     let emocionesSeleccionadas = [];
+    let intensidades = {};
 
     EMOCIONES.forEach((nombre) => {
       const boton = document.createElement("button");
@@ -282,8 +287,45 @@
       }
     });
 
+    function construirIntensidades() {
+      const nuevas = {};
+      emocionesSeleccionadas.forEach((nombre) => {
+        nuevas[nombre] = intensidades[nombre] ?? 5;
+      });
+      intensidades = nuevas;
+
+      listaIntensidades.innerHTML = "";
+      emocionesSeleccionadas.forEach((nombre) => {
+        const bloque = document.createElement("div");
+        bloque.className = "intensidad-item";
+
+        const cabecera = document.createElement("div");
+        cabecera.className = "intensidad-cabecera";
+        const etiqueta = document.createElement("span");
+        etiqueta.textContent = nombre;
+        const valor = document.createElement("span");
+        valor.className = "intensidad-valor";
+        valor.textContent = intensidades[nombre];
+        cabecera.append(etiqueta, valor);
+
+        const rango = document.createElement("input");
+        rango.type = "range";
+        rango.min = "1";
+        rango.max = "10";
+        rango.value = intensidades[nombre];
+        rango.setAttribute("aria-label", `Intensidad de ${nombre}`);
+        rango.addEventListener("input", () => {
+          intensidades[nombre] = Number(rango.value);
+          valor.textContent = rango.value;
+        });
+
+        bloque.append(cabecera, rango);
+        listaIntensidades.appendChild(bloque);
+      });
+    }
+
     botonSiguiente.addEventListener("click", () => {
-      emocionElegida.textContent = emocionesSeleccionadas.join(", ");
+      construirIntensidades();
       paso1.hidden = true;
       paso2.hidden = false;
       botonFinalizar.focus();
@@ -295,14 +337,12 @@
       botonSiguiente.focus();
     });
 
-    rangoIntensidad.addEventListener("input", () => {
-      valorIntensidad.textContent = rangoIntensidad.value;
-    });
-
     botonFinalizar.addEventListener("click", () => {
       localStorage.setItem(CLAVE_REGISTRO, JSON.stringify({
-        emociones: emocionesSeleccionadas,
-        intensidad: Number(rangoIntensidad.value)
+        emociones: emocionesSeleccionadas.map((nombre) => ({
+          emocion: nombre,
+          intensidad: intensidades[nombre]
+        }))
       }));
       localStorage.setItem(CLAVE_PRIMER_USO, "true");
       flujoInicial.hidden = true;
