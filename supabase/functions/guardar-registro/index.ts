@@ -25,6 +25,7 @@ function validarUsuario(datos: any): string | null {
   if (!esTexto(datos.codigo, 20) || !datos.codigo.trim()) return "Código inválido";
   if (typeof datos.dni !== "string" || !/^\d{8}$/.test(datos.dni)) return "DNI inválido";
   if (!esTexto(datos.sede, 60) || !datos.sede) return "Sede inválida";
+  if (typeof datos.claveHash !== "string" || !/^[0-9a-f]{64}$/.test(datos.claveHash)) return "Clave inválida";
   return null;
 }
 
@@ -71,6 +72,7 @@ Deno.serve(async (req) => {
         dni: datos.dni,
         codigo_estudiante: datos.codigo.trim(),
         sede: datos.sede,
+        clave_hash: datos.claveHash,
       },
       { onConflict: "dni" },
     );
