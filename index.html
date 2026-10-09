@@ -84,11 +84,52 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 1.5rem;
+      padding: 1.5rem 1.5rem 5rem;
       overflow-y: auto;
     }
 
     .pantalla-completa[hidden] { display: none; }
+
+    .titulo-principal {
+      margin: 0;
+      font-size: 3.5rem;
+      font-weight: 800;
+      color: #1e3a8a;
+    }
+
+    .semana {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .dia {
+      border-radius: 12px;
+      min-height: 110px;
+      padding: 0.6rem 0.25rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 0.25rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      background: #e2e8f0;
+      color: #334155;
+    }
+
+    .dia.hoy { outline: 3px solid #1e3a8a; outline-offset: 2px; }
+
+    .dia-numero { font-size: 1.25rem; font-weight: 700; }
+
+    .dia-emocion { overflow-wrap: anywhere; }
+
+    .dia-nombre-semana {
+      font-size: 0.8rem;
+      color: #64748b;
+      font-weight: 600;
+    }
 
     .contenedor-paso {
       background: #ffffff;
@@ -300,6 +341,20 @@
 
   </div>
 
+  <main class="pantalla-completa" id="pantalla-principal" hidden>
+    <section class="contenedor-paso">
+      <h1 class="titulo-principal">EmoSense</h1>
+      <p class="subtitulo">Tu semana emocional</p>
+
+      <div class="semana" id="semana"></div>
+
+      <div class="acciones">
+        <span></span>
+        <button type="button" class="btn" id="btn-nuevo-registro">Nuevo registro</button>
+      </div>
+    </section>
+  </main>
+
   <div class="overlay overlay-emergencia" id="emergencia" role="dialog" aria-modal="true" aria-labelledby="titulo-emergencia" hidden>
     <div class="modal">
       <h1 id="titulo-emergencia">¿Necesitas ayuda ahora?</h1>
@@ -316,7 +371,8 @@
   <button type="button" class="boton-emergencia" id="btn-emergencia">Emergencia</button>
 
   <script>
-    const CLAVE_REGISTRO = "emosense_registro";
+    const CLAVE_REGISTROS = "emosense_registros";
+    const DIAS_SEMANA = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
 
     const EMOCIONES = [
       { nombre: "Alegría/Felicidad", color: "#b45309" },
@@ -354,6 +410,8 @@
     const botonAtras3 = document.getElementById("btn-atras-3");
     const botonFinalizar = document.getElementById("btn-finalizar");
     const listaIntensidades = document.getElementById("lista-intensidades");
+    const pantallaPrincipal = document.getElementById("pantalla-principal");
+    const botonNuevoRegistro = document.getElementById("btn-nuevo-registro");
     const quePensaste = document.getElementById("que-pensaste");
     const queHiciste = document.getElementById("que-hiciste");
 
@@ -451,16 +509,118 @@
       botonContinuar2.focus();
     });
 
+    function leerRegistros() {
+      return JSON.parse(localStorage.getItem(CLAVE_REGISTROS) || "[]");
+    }
+
+    function fechaLocal(fecha) {
+      const mes = String(fecha.getMonth() + 1).padStart(2, "0");
+      const dia = String(fecha.getDate()).padStart(2, "0");
+      return `${fecha.getFullYear()}-${mes}-${dia}`;
+    }
+
+    function lunesDeLaSemana(fecha) {
+      const lunes = new Date(fecha);
+      lunes.setDate(fecha.getDate() - ((fecha.getDay() + 6) % 7));
+      return lunes;
+    }
+
+    function emocionMasIntensa(registrosDelDia) {
+      let mejor = null;
+      registrosDelDia.forEach((registro) => {
+        registro.emociones.forEach((emocion) => {
+          if (!mejor || emocion.intensidad > mejor.intensidad) {
+            mejor = emocion;
+          }
+        });
+      });
+      return mejor;
+    }
+
+    function renderSemana() {
+      const contenedorSemana = document.getElementById("semana");
+      const registros = leerRegistros();
+      const hoy = new Date();
+      const lunes = lunesDeLaSemana(hoy);
+      contenedorSemana.innerHTML = "";
+
+      DIAS_SEMANA.forEach((nombreDia, indice) => {
+        const fecha = new Date(lunes);
+        fecha.setDate(lunes.getDate() + indice);
+        const delDia = registros.filter((registro) => registro.fecha === fechaLocal(fecha));
+        const masIntensa = emocionMasIntensa(delDia);
+
+        const caja = document.createElement("div");
+        caja.className = "dia";
+        if (fechaLocal(fecha) === fechaLocal(hoy)) {
+          caja.classList.add("hoy");
+        }
+
+        const encabezado = document.createElement("span");
+        encabezado.className = "dia-nombre-semana";
+        encabezado.textContent = nombreDia;
+        const numero = document.createElement("span");
+        numero.className = "dia-numero";
+        numero.textContent = fecha.getDate();
+        caja.append(encabezado, numero);
+
+        const texto = document.createElement("span");
+        texto.className = "dia-emocion";
+        if (masIntensa) {
+          caja.style.background = colorDe(masIntensa.emocion);
+          caja.style.color = "#ffffff";
+          texto.textContent = masIntensa.emocion;
+        } else {
+          texto.textContent = "Sin registro";
+        }
+        caja.appendChild(texto);
+
+        contenedorSemana.appendChild(caja);
+      });
+    }
+
+    function reiniciarFlujo() {
+      emocionesSeleccionadas = [];
+      intensidades = {};
+      listaEmociones.querySelectorAll(".emocion").forEach((boton) => {
+        boton.setAttribute("aria-pressed", "false");
+      });
+      botonSiguiente.disabled = true;
+      quePensaste.value = "";
+      queHiciste.value = "";
+      paso1.hidden = false;
+      paso2.hidden = true;
+      paso3.hidden = true;
+    }
+
+    function mostrarPantallaPrincipal() {
+      flujoInicial.hidden = true;
+      renderSemana();
+      pantallaPrincipal.hidden = false;
+      botonNuevoRegistro.focus();
+    }
+
     botonFinalizar.addEventListener("click", () => {
-      localStorage.setItem(CLAVE_REGISTRO, JSON.stringify({
+      const registros = leerRegistros();
+      const ahora = new Date();
+      registros.push({
+        fecha: fechaLocal(ahora),
         emociones: emocionesSeleccionadas.map((nombre) => ({
           emocion: nombre,
           intensidad: intensidades[nombre]
         })),
         pensamiento: quePensaste.value.trim(),
         accion: queHiciste.value.trim()
-      }));
-      flujoInicial.hidden = true;
+      });
+      localStorage.setItem(CLAVE_REGISTROS, JSON.stringify(registros));
+      mostrarPantallaPrincipal();
+    });
+
+    botonNuevoRegistro.addEventListener("click", () => {
+      reiniciarFlujo();
+      pantallaPrincipal.hidden = true;
+      flujoInicial.hidden = false;
+      document.getElementById("titulo-paso-1").focus();
     });
 
     const botonEmergencia = document.getElementById("btn-emergencia");
