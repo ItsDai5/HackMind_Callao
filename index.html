@@ -784,7 +784,14 @@
       document.querySelectorAll(".vista-boton").forEach((boton) => {
         boton.setAttribute("aria-pressed", String(boton.dataset.vista === vistaActual));
       });
-      document.getElementById("subtitulo-principal").textContent = SUBTITULOS[vistaActual];
+      const hoy = new Date();
+      let subtitulo = SUBTITULOS[vistaActual];
+      if (vistaActual === "mes") {
+        subtitulo += `: ${hoy.toLocaleDateString("es", { month: "long", year: "numeric" })}`;
+      } else if (vistaActual === "anio") {
+        subtitulo += `: ${hoy.getFullYear()}`;
+      }
+      document.getElementById("subtitulo-principal").textContent = subtitulo;
       renderCalendario();
       renderDetalle();
     }
