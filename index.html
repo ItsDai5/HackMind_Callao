@@ -746,15 +746,18 @@
 
     botonFinalizar.addEventListener("click", () => {
       const fechaHoy = fechaLocal(new Date());
-      const registros = leerRegistros().filter((registro) => registro.fecha !== fechaHoy);
+      const todos = leerRegistros();
+      const anterior = todos.find((registro) => registro.fecha === fechaHoy);
+      const registros = todos.filter((registro) => registro.fecha !== fechaHoy);
+      const acumular = (previo, nuevo) => [previo, nuevo].map((texto) => (texto || "").trim()).filter(Boolean).join("\n");
       registros.push({
         fecha: fechaHoy,
         emociones: emocionesSeleccionadas.map((nombre) => ({
           emocion: nombre,
           intensidad: intensidades[nombre]
         })),
-        pensamiento: quePensaste.value.trim(),
-        accion: queHiciste.value.trim()
+        pensamiento: acumular(anterior?.pensamiento, quePensaste.value),
+        accion: acumular(anterior?.accion, queHiciste.value)
       });
       localStorage.setItem(CLAVE_REGISTROS, JSON.stringify(registros));
       mostrarPantallaPrincipal();
