@@ -221,7 +221,7 @@
 
       <div id="lista-intensidades"></div>
       <div class="escala">
-        <span>Leve (1)</span>
+        <span>Leve (0)</span>
         <span>Muy intensa (10)</span>
       </div>
 
@@ -287,7 +287,7 @@
     function construirIntensidades() {
       const nuevas = {};
       emocionesSeleccionadas.forEach((nombre) => {
-        nuevas[nombre] = intensidades[nombre] ?? 5;
+        nuevas[nombre] = intensidades[nombre] ?? 0;
       });
       intensidades = nuevas;
 
@@ -307,7 +307,7 @@
 
         const rango = document.createElement("input");
         rango.type = "range";
-        rango.min = "1";
+        rango.min = "0";
         rango.max = "10";
         rango.value = intensidades[nombre];
         rango.setAttribute("aria-label", `Intensidad de ${nombre}`);
