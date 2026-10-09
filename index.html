@@ -248,7 +248,7 @@
   <div class="pantalla-completa" id="flujo-inicial" role="dialog" aria-modal="true" aria-labelledby="titulo-paso-1" hidden>
 
     <section class="contenedor-paso" id="paso-1">
-      <p class="indicador">Paso 1 de 2</p>
+      <p class="indicador">Paso 1 de 3</p>
       <h2 id="titulo-paso-1" tabindex="-1">¿Qué emoción sientes ahora?</h2>
       <p class="subtitulo">Elige una o varias emociones que describan cómo te sientes.</p>
 
@@ -261,7 +261,7 @@
     </section>
 
     <section class="contenedor-paso" id="paso-2" hidden>
-      <p class="indicador">Paso 2 de 2</p>
+      <p class="indicador">Paso 2 de 3</p>
       <h2>¿Qué tan intensa es cada emoción?</h2>
       <p class="subtitulo">Ajusta la intensidad de cada emoción seleccionada.</p>
 
@@ -270,6 +270,17 @@
         <span>Leve (0)</span>
         <span>Muy intensa (10)</span>
       </div>
+
+      <div class="acciones">
+        <button type="button" class="btn btn-secundario" id="btn-atras">Atrás</button>
+        <button type="button" class="btn" id="btn-continuar-2">Continuar</button>
+      </div>
+    </section>
+
+    <section class="contenedor-paso" id="paso-3" hidden>
+      <p class="indicador">Paso 3 de 3</p>
+      <h2>Cuéntanos más</h2>
+      <p class="subtitulo">Estas respuestas son opcionales.</p>
 
       <div class="campo">
         <label for="que-pensaste">¿Qué pensaste?</label>
@@ -282,7 +293,7 @@
       </div>
 
       <div class="acciones">
-        <button type="button" class="btn btn-secundario" id="btn-atras">Atrás</button>
+        <button type="button" class="btn btn-secundario" id="btn-atras-3">Atrás</button>
         <button type="button" class="btn" id="btn-finalizar">Guardar registro</button>
       </div>
     </section>
@@ -302,7 +313,7 @@
     </div>
   </div>
 
-  <button type="button" class="boton-emergencia" id="btn-emergencia">🆘 Emergencia</button>
+  <button type="button" class="boton-emergencia" id="btn-emergencia">Emergencia</button>
 
   <script>
     const CLAVE_REGISTRO = "emosense_registro";
@@ -335,9 +346,12 @@
     const flujoInicial = document.getElementById("flujo-inicial");
     const paso1 = document.getElementById("paso-1");
     const paso2 = document.getElementById("paso-2");
+    const paso3 = document.getElementById("paso-3");
     const listaEmociones = document.getElementById("lista-emociones");
     const botonSiguiente = document.getElementById("btn-siguiente");
     const botonAtras = document.getElementById("btn-atras");
+    const botonContinuar2 = document.getElementById("btn-continuar-2");
+    const botonAtras3 = document.getElementById("btn-atras-3");
     const botonFinalizar = document.getElementById("btn-finalizar");
     const listaIntensidades = document.getElementById("lista-intensidades");
     const quePensaste = document.getElementById("que-pensaste");
@@ -416,13 +430,25 @@
       construirIntensidades();
       paso1.hidden = true;
       paso2.hidden = false;
-      botonFinalizar.focus();
+      botonContinuar2.focus();
     });
 
     botonAtras.addEventListener("click", () => {
       paso2.hidden = true;
       paso1.hidden = false;
       botonSiguiente.focus();
+    });
+
+    botonContinuar2.addEventListener("click", () => {
+      paso2.hidden = true;
+      paso3.hidden = false;
+      quePensaste.focus();
+    });
+
+    botonAtras3.addEventListener("click", () => {
+      paso3.hidden = true;
+      paso2.hidden = false;
+      botonContinuar2.focus();
     });
 
     botonFinalizar.addEventListener("click", () => {
