@@ -179,6 +179,14 @@
       margin: 0 0 0.5rem;
     }
 
+    .bienvenida-paso { margin-bottom: 1.5rem; }
+
+    .bienvenida-titulo {
+      margin: 0 0 0.5rem;
+      font-size: 1.75rem;
+      color: #1e3a8a;
+    }
+
     .contenedor-paso h2 {
       margin: 0 0 0.5rem;
       color: #1e3a8a;
@@ -321,20 +329,14 @@
 </head>
 <body>
 
-  <div class="overlay" id="bienvenida" role="dialog" aria-modal="true" aria-labelledby="titulo-bienvenida">
-    <div class="modal">
-      <h1 id="titulo-bienvenida">Universidad César Vallejo</h1>
-      <p>
-        💙 ¡Bienvenido/a a EmoSense! 💗<br>
-        Un espacio seguro para expresar tus emociones, comprender lo que sientes y cuidar tu bienestar emocional. 🌷
-      </p>
-      <button type="button" class="btn" id="btn-comenzar">Comenzar</button>
-    </div>
-  </div>
-
-  <div class="pantalla-completa" id="flujo-inicial" role="dialog" aria-modal="true" aria-labelledby="titulo-paso-1" hidden>
+  <div class="pantalla-completa" id="flujo-inicial" role="dialog" aria-modal="true" aria-labelledby="titulo-paso-1">
 
     <section class="contenedor-paso" id="paso-1">
+      <div class="bienvenida-paso">
+        <h1 class="bienvenida-titulo">¡Bienvenido/a a EmoSense!</h1>
+        <p class="subtitulo">Un espacio para expresar tus emociones y cuidar tu bienestar emocional. 🌷</p>
+      </div>
+
       <p class="indicador">Paso 1 de 3</p>
       <h2 id="titulo-paso-1" tabindex="-1">¿Qué emoción sientes ahora?</h2>
       <p class="subtitulo">Elige una o varias emociones que describan cómo te sientes.</p>
@@ -447,8 +449,6 @@
       return EMOCIONES.find((emocion) => emocion.nombre === nombre).color;
     }
 
-    const bienvenida = document.getElementById("bienvenida");
-    const botonComenzar = document.getElementById("btn-comenzar");
     const flujoInicial = document.getElementById("flujo-inicial");
     const paso1 = document.getElementById("paso-1");
     const paso2 = document.getElementById("paso-2");
@@ -490,12 +490,6 @@
       boton.setAttribute("aria-pressed", quedaSeleccionada ? "true" : "false");
       botonSiguiente.disabled = emocionesSeleccionadas.length === 0;
     }
-
-    botonComenzar.addEventListener("click", () => {
-      bienvenida.hidden = true;
-      flujoInicial.hidden = false;
-      document.getElementById("titulo-paso-1").focus();
-    });
 
     function construirIntensidades() {
       intensidades = {};
@@ -737,11 +731,10 @@
       localStorage.removeItem(CLAVE_REGISTROS);
       localStorage.removeItem("emosense_registro");
       reiniciarFlujo();
-      flujoInicial.hidden = true;
       pantallaPrincipal.hidden = true;
       panelEmergencia.hidden = true;
-      bienvenida.hidden = false;
-      botonComenzar.focus();
+      flujoInicial.hidden = false;
+      document.getElementById("titulo-paso-1").focus();
     });
 
     botonEmergencia.addEventListener("click", () => {
