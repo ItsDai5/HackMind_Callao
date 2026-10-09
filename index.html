@@ -544,6 +544,7 @@
         rango.max = "10";
         rango.value = intensidades[nombre];
         rango.setAttribute("aria-label", `Intensidad de ${nombre}`);
+        rango.style.accentColor = colorDe(nombre);
         rango.addEventListener("input", () => {
           intensidades[nombre] = Number(rango.value);
           valor.textContent = rango.value;
