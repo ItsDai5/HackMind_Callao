@@ -285,11 +285,10 @@
     });
 
     function construirIntensidades() {
-      const nuevas = {};
+      intensidades = {};
       emocionesSeleccionadas.forEach((nombre) => {
-        nuevas[nombre] = intensidades[nombre] ?? 0;
+        intensidades[nombre] = 0;
       });
-      intensidades = nuevas;
 
       listaIntensidades.innerHTML = "";
       emocionesSeleccionadas.forEach((nombre) => {
