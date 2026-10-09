@@ -147,7 +147,7 @@
 
     .vista-boton:focus-visible { outline: 3px solid #93c5fd; outline-offset: 2px; }
 
-    .navegar-anio {
+    .navegar-periodo {
       display: flex;
       align-items: center;
       justify-content: center;
@@ -155,9 +155,9 @@
       margin-bottom: 1rem;
     }
 
-    .navegar-anio[hidden] { display: none; }
+    .navegar-periodo[hidden] { display: none; }
 
-    .navegar-anio span {
+    .navegar-periodo span {
       min-width: 5ch;
       text-align: center;
       font-size: 1.5rem;
@@ -165,7 +165,7 @@
       color: #1e3a8a;
     }
 
-    .flecha-anio {
+    .flecha-periodo {
       width: 44px;
       height: 44px;
       border: none;
@@ -177,8 +177,8 @@
       cursor: pointer;
     }
 
-    .flecha-anio:hover { background: #bfdbfe; }
-    .flecha-anio:focus-visible { outline: 3px solid #93c5fd; outline-offset: 2px; }
+    .flecha-periodo:hover { background: #bfdbfe; }
+    .flecha-periodo:focus-visible { outline: 3px solid #93c5fd; outline-offset: 2px; }
 
     .semana.vista-mes { grid-template-columns: repeat(auto-fit, minmax(70px, 1fr)); gap: 0.4rem; }
     .semana.vista-mes .dia { min-height: 92px; padding: 0.4rem 0.2rem; font-size: 0.75rem; }
@@ -434,6 +434,7 @@
       .semana.vista-mes { grid-template-columns: repeat(auto-fit, minmax(52px, 1fr)); }
       .semana.vista-mes .dia { min-height: 80px; }
       .semana.vista-anio { grid-template-columns: repeat(2, 1fr); }
+      .navegar-periodo span { font-size: 1.1rem; }
       .intensidad-cabecera { font-size: 0.95rem; }
       .btn { padding: 0.65rem 1.5rem; }
     }
@@ -516,10 +517,10 @@
         <button type="button" class="vista-boton" data-vista="anio" aria-pressed="false">Año</button>
       </div>
 
-      <div class="navegar-anio" id="navegar-anio" hidden>
-        <button type="button" class="flecha-anio" id="anio-anterior" aria-label="Año anterior">‹</button>
-        <span id="anio-visto"></span>
-        <button type="button" class="flecha-anio" id="anio-siguiente" aria-label="Año siguiente">›</button>
+      <div class="navegar-periodo" id="navegar-periodo" hidden>
+        <button type="button" class="flecha-periodo" id="periodo-anterior" aria-label="Anterior">‹</button>
+        <span id="periodo-visto"></span>
+        <button type="button" class="flecha-periodo" id="periodo-siguiente" aria-label="Siguiente">›</button>
       </div>
 
       <div class="semana" id="semana"></div>
@@ -719,6 +720,7 @@
 
     let vistaActual = "semana";
     let anioVisto = new Date().getFullYear();
+    let mesVisto = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
     let periodoSeleccionado = null;
 
     function clavePeriodo(periodo) {
@@ -745,9 +747,9 @@
           agregarDia(fecha, nombreDia, fecha.getDate());
         });
       } else if (vistaActual === "mes") {
-        const diasDelMes = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0).getDate();
+        const diasDelMes = new Date(mesVisto.getFullYear(), mesVisto.getMonth() + 1, 0).getDate();
         for (let dia = 1; dia <= diasDelMes; dia++) {
-          agregarDia(new Date(hoy.getFullYear(), hoy.getMonth(), dia), "", dia);
+          agregarDia(new Date(mesVisto.getFullYear(), mesVisto.getMonth(), dia), "", dia);
         }
       } else {
         for (let mes = 0; mes < 12; mes++) {
@@ -824,33 +826,38 @@
       document.querySelectorAll(".vista-boton").forEach((boton) => {
         boton.setAttribute("aria-pressed", String(boton.dataset.vista === vistaActual));
       });
-      const hoy = new Date();
-      let subtitulo = SUBTITULOS[vistaActual];
+      document.getElementById("subtitulo-principal").textContent = SUBTITULOS[vistaActual];
+      const navegarPeriodo = document.getElementById("navegar-periodo");
+      navegarPeriodo.hidden = vistaActual === "semana";
       if (vistaActual === "mes") {
-        subtitulo += `: ${hoy.toLocaleDateString("es", { month: "long", year: "numeric" })}`;
+        document.getElementById("periodo-visto").textContent = mesVisto.toLocaleDateString("es", { month: "long", year: "numeric" });
+      } else if (vistaActual === "anio") {
+        document.getElementById("periodo-visto").textContent = anioVisto;
       }
-      document.getElementById("subtitulo-principal").textContent = subtitulo;
-      const navegarAnio = document.getElementById("navegar-anio");
-      navegarAnio.hidden = vistaActual !== "anio";
-      document.getElementById("anio-visto").textContent = anioVisto;
       renderCalendario();
       renderDetalle();
     }
 
-    function cambiarAnio(delta) {
-      anioVisto += delta;
+    function navegarPeriodo(delta) {
+      if (vistaActual === "mes") {
+        mesVisto = new Date(mesVisto.getFullYear(), mesVisto.getMonth() + delta, 1);
+      } else {
+        anioVisto += delta;
+      }
       periodoSeleccionado = null;
       actualizarVistas();
     }
 
-    document.getElementById("anio-anterior").addEventListener("click", () => cambiarAnio(-1));
-    document.getElementById("anio-siguiente").addEventListener("click", () => cambiarAnio(1));
+    document.getElementById("periodo-anterior").addEventListener("click", () => navegarPeriodo(-1));
+    document.getElementById("periodo-siguiente").addEventListener("click", () => navegarPeriodo(1));
 
     document.querySelectorAll(".vista-boton").forEach((boton) => {
       boton.addEventListener("click", () => {
         vistaActual = boton.dataset.vista;
         periodoSeleccionado = null;
-        anioVisto = new Date().getFullYear();
+        const hoy = new Date();
+        anioVisto = hoy.getFullYear();
+        mesVisto = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
         actualizarVistas();
       });
     });
