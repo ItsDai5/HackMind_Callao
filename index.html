@@ -221,7 +221,7 @@
 
       <div id="lista-intensidades"></div>
       <div class="escala">
-        <span>Leve (1)</span>
+        <span>Leve (0)</span>
         <span>Muy intensa (10)</span>
       </div>
 
@@ -234,7 +234,6 @@
   </div>
 
   <script>
-    const CLAVE_PRIMER_USO = "emosense_onboarding_completado";
     const CLAVE_REGISTRO = "emosense_registro";
 
     const EMOCIONES = [
@@ -281,18 +280,15 @@
 
     botonComenzar.addEventListener("click", () => {
       bienvenida.hidden = true;
-      if (!localStorage.getItem(CLAVE_PRIMER_USO)) {
-        flujoInicial.hidden = false;
-        document.getElementById("titulo-paso-1").focus();
-      }
+      flujoInicial.hidden = false;
+      document.getElementById("titulo-paso-1").focus();
     });
 
     function construirIntensidades() {
-      const nuevas = {};
+      intensidades = {};
       emocionesSeleccionadas.forEach((nombre) => {
-        nuevas[nombre] = intensidades[nombre] ?? 5;
+        intensidades[nombre] = 0;
       });
-      intensidades = nuevas;
 
       listaIntensidades.innerHTML = "";
       emocionesSeleccionadas.forEach((nombre) => {
@@ -310,7 +306,7 @@
 
         const rango = document.createElement("input");
         rango.type = "range";
-        rango.min = "1";
+        rango.min = "0";
         rango.max = "10";
         rango.value = intensidades[nombre];
         rango.setAttribute("aria-label", `Intensidad de ${nombre}`);
@@ -344,7 +340,6 @@
           intensidad: intensidades[nombre]
         }))
       }));
-      localStorage.setItem(CLAVE_PRIMER_USO, "true");
       flujoInicial.hidden = true;
     });
   </script>
