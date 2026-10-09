@@ -197,7 +197,7 @@
     <section class="contenedor-paso" id="paso-1">
       <p class="indicador">Paso 1 de 2</p>
       <h2 id="titulo-paso-1" tabindex="-1">¿Qué emoción sientes ahora?</h2>
-      <p class="subtitulo">Elige la emoción que mejor describa cómo te sientes.</p>
+      <p class="subtitulo">Elige una o varias emociones que describan cómo te sientes.</p>
 
       <div class="emociones" id="lista-emociones"></div>
 
@@ -210,7 +210,7 @@
     <section class="contenedor-paso" id="paso-2" hidden>
       <p class="indicador">Paso 2 de 2</p>
       <h2>¿Qué tan intensa es?</h2>
-      <p class="subtitulo">Emoción seleccionada: <strong id="emocion-elegida"></strong></p>
+      <p class="subtitulo">Emociones seleccionadas: <strong id="emocion-elegida"></strong></p>
 
       <div class="intensidad-valor" id="valor-intensidad">5</div>
       <input type="range" id="intensidad" min="1" max="10" value="5" aria-label="Intensidad de la emoción">
@@ -250,7 +250,7 @@
     const rangoIntensidad = document.getElementById("intensidad");
     const valorIntensidad = document.getElementById("valor-intensidad");
 
-    let emocionSeleccionada = null;
+    let emocionesSeleccionadas = [];
 
     EMOCIONES.forEach((nombre) => {
       const boton = document.createElement("button");
@@ -258,16 +258,20 @@
       boton.className = "emocion";
       boton.textContent = nombre;
       boton.setAttribute("aria-pressed", "false");
-      boton.addEventListener("click", () => seleccionarEmocion(nombre, boton));
+      boton.addEventListener("click", () => alternarEmocion(nombre, boton));
       listaEmociones.appendChild(boton);
     });
 
-    function seleccionarEmocion(nombre, boton) {
-      emocionSeleccionada = nombre;
-      listaEmociones.querySelectorAll(".emocion").forEach((b) => {
-        b.setAttribute("aria-pressed", b === boton ? "true" : "false");
-      });
-      botonSiguiente.disabled = false;
+    function alternarEmocion(nombre, boton) {
+      const indice = emocionesSeleccionadas.indexOf(nombre);
+      const quedaSeleccionada = indice === -1;
+      if (quedaSeleccionada) {
+        emocionesSeleccionadas.push(nombre);
+      } else {
+        emocionesSeleccionadas.splice(indice, 1);
+      }
+      boton.setAttribute("aria-pressed", quedaSeleccionada ? "true" : "false");
+      botonSiguiente.disabled = emocionesSeleccionadas.length === 0;
     }
 
     botonComenzar.addEventListener("click", () => {
@@ -279,7 +283,7 @@
     });
 
     botonSiguiente.addEventListener("click", () => {
-      emocionElegida.textContent = emocionSeleccionada;
+      emocionElegida.textContent = emocionesSeleccionadas.join(", ");
       paso1.hidden = true;
       paso2.hidden = false;
       botonFinalizar.focus();
@@ -297,7 +301,7 @@
 
     botonFinalizar.addEventListener("click", () => {
       localStorage.setItem(CLAVE_REGISTRO, JSON.stringify({
-        emocion: emocionSeleccionada,
+        emociones: emocionesSeleccionadas,
         intensidad: Number(rangoIntensidad.value)
       }));
       localStorage.setItem(CLAVE_PRIMER_USO, "true");
