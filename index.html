@@ -493,6 +493,7 @@
 
     let emocionesSeleccionadas = [];
     let intensidades = {};
+    let intensidadesPrevias = {};
 
     EMOCIONES.forEach(({ nombre, color }) => {
       const boton = document.createElement("button");
@@ -518,10 +519,11 @@
     }
 
     function construirIntensidades() {
-      intensidades = {};
+      const nuevas = {};
       emocionesSeleccionadas.forEach((nombre) => {
-        intensidades[nombre] = 0;
+        nuevas[nombre] = intensidades[nombre] ?? intensidadesPrevias[nombre] ?? 0;
       });
+      intensidades = nuevas;
 
       listaIntensidades.innerHTML = "";
       emocionesSeleccionadas.forEach((nombre) => {
@@ -723,12 +725,20 @@
     }
 
     function reiniciarFlujo() {
+      const registroHoy = leerRegistros().find((registro) => registro.fecha === fechaLocal(new Date()));
+      intensidadesPrevias = {};
       emocionesSeleccionadas = [];
+      if (registroHoy) {
+        registroHoy.emociones.forEach(({ emocion, intensidad }) => {
+          emocionesSeleccionadas.push(emocion);
+          intensidadesPrevias[emocion] = intensidad;
+        });
+      }
       intensidades = {};
-      listaEmociones.querySelectorAll(".emocion").forEach((boton) => {
-        boton.setAttribute("aria-pressed", "false");
+      listaEmociones.querySelectorAll(".emocion").forEach((boton, indice) => {
+        boton.setAttribute("aria-pressed", String(emocionesSeleccionadas.includes(EMOCIONES[indice].nombre)));
       });
-      botonSiguiente.disabled = true;
+      botonSiguiente.disabled = emocionesSeleccionadas.length === 0;
       quePensaste.value = "";
       queHiciste.value = "";
       paso1.hidden = false;
