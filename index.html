@@ -751,12 +751,11 @@
       const anterior = todos.find((registro) => registro.fecha === fechaHoy);
       const registros = todos.filter((registro) => registro.fecha !== fechaHoy);
       const acumular = (previo, nuevo) => [previo, nuevo].map((texto) => (texto || "").trim()).filter(Boolean).join("\n");
+      const emocionesDelDia = new Map((anterior?.emociones || []).map(({ emocion, intensidad }) => [emocion, intensidad]));
+      emocionesSeleccionadas.forEach((nombre) => emocionesDelDia.set(nombre, intensidades[nombre]));
       registros.push({
         fecha: fechaHoy,
-        emociones: emocionesSeleccionadas.map((nombre) => ({
-          emocion: nombre,
-          intensidad: intensidades[nombre]
-        })),
+        emociones: [...emocionesDelDia].map(([emocion, intensidad]) => ({ emocion, intensidad })),
         pensamiento: acumular(anterior?.pensamiento, quePensaste.value),
         accion: acumular(anterior?.accion, queHiciste.value)
       });
