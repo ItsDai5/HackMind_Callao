@@ -223,7 +223,7 @@
       flex-direction: column;
       justify-content: flex-start;
       gap: 1.25rem;
-      padding-top: 5rem;
+      padding-top: 1.5rem;
     }
 
     .flujo .contenedor-paso { margin: auto 0; }
@@ -303,13 +303,10 @@
     .boton-emergencia:focus-visible { outline: 3px solid #fecaca; outline-offset: 2px; }
 
     .logo-emosense {
-      position: fixed;
-      top: 0.5rem;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 64px;
-      height: 64px;
-      z-index: 1500;
+      display: block;
+      width: 88px;
+      height: 88px;
+      margin: 0 auto 0.5rem;
     }
 
     .boton-reinicio {
@@ -393,12 +390,11 @@
     @media (max-width: 600px) {
       .emociones { grid-template-columns: repeat(2, 1fr); }
       .pantalla-completa { padding: 1rem 1rem 5rem; }
-      .flujo { padding-top: 4.5rem; }
+      .logo-emosense { width: 64px; height: 64px; }
       .contenedor-paso { padding: 1.25rem; }
       .titulo-principal { font-size: 2.25rem; }
       .bienvenida-titulo { font-size: 1.4rem; }
       .contenedor-paso h2 { font-size: 1.25rem; }
-      .logo-emosense { width: 52px; height: 52px; }
       .semana { grid-template-columns: repeat(auto-fit, minmax(92px, 1fr)); gap: 0.5rem; }
       .dia { min-height: 120px; }
       .dia-numero { font-size: 1.75rem; }
@@ -412,9 +408,9 @@
 </head>
 <body>
 
-  <img class="logo-emosense" src="Imgenes/246dbbc0-ba2c-49a1-96dc-6dfb2582f18d-removebg-preview.png" alt="Logo de EmoSense">
-
   <div class="pantalla-completa flujo" id="flujo-inicial" role="dialog" aria-modal="true" aria-labelledby="titulo-paso-1">
+
+    <img class="logo-emosense" src="Imgenes/246dbbc0-ba2c-49a1-96dc-6dfb2582f18d-removebg-preview.png" alt="Logo de EmoSense">
 
     <div class="bienvenida-paso">
       <h1 class="bienvenida-titulo">¡Bienvenido/a a EmoSense!</h1>
@@ -474,7 +470,9 @@
 
   </div>
 
-  <main class="pantalla-completa" id="pantalla-principal" hidden>
+  <main class="pantalla-completa flujo" id="pantalla-principal" hidden>
+    <img class="logo-emosense" src="Imgenes/246dbbc0-ba2c-49a1-96dc-6dfb2582f18d-removebg-preview.png" alt="Logo de EmoSense">
+
     <section class="contenedor-paso">
       <h1 class="titulo-principal">EmoSense</h1>
       <p class="subtitulo" id="subtitulo-principal">Tu semana emocional</p>
