@@ -117,6 +117,8 @@ quitquit<!DOCTYPE html>
       margin-bottom: 1.5rem;
     }
 
+    .semana.vista-semana { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+
     .dia {
       border: none;
       border-radius: 16px;
@@ -312,7 +314,11 @@ quitquit<!DOCTYPE html>
     }
 
     .emocion {
-      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      background: color-mix(in srgb, var(--color) 18%, white);
       border: 2px solid var(--color);
       border-radius: 12px;
       padding: 0.9rem 0.5rem;
@@ -322,10 +328,11 @@ quitquit<!DOCTYPE html>
       transition: filter 0.2s ease, background 0.2s ease;
     }
 
-    .emocion:hover { filter: brightness(0.92); }
+    .emocion img { width: 56px; height: 56px; object-fit: contain; }
+
+    .emocion:hover { filter: brightness(0.96); }
     .emocion[aria-pressed="true"] {
-      background: var(--color);
-      color: #ffffff;
+      background: color-mix(in srgb, var(--color) 40%, white);
       font-weight: 600;
     }
     .emocion:focus-visible { outline: 3px solid #93c5fd; outline-offset: 2px; }
@@ -472,6 +479,7 @@ quitquit<!DOCTYPE html>
       .bienvenida-titulo { font-size: 1.4rem; }
       .contenedor-paso h2 { font-size: 1.25rem; }
       .semana { grid-template-columns: repeat(auto-fit, minmax(92px, 1fr)); gap: 0.5rem; }
+      .semana.vista-semana { grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 0.3rem; }
       .dia { min-height: 120px; }
       .dia-numero { font-size: 1.75rem; }
       .semana.vista-mes { grid-template-columns: repeat(auto-fit, minmax(52px, 1fr)); }
@@ -692,22 +700,22 @@ quitquit<!DOCTYPE html>
     const DIAS_SEMANA = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
 
     const EMOCIONES = [
-      { nombre: "Alegría/Felicidad", color: "#b45309" },
-      { nombre: "Tristeza", color: "#2563eb" },
-      { nombre: "Miedo", color: "#6d28d9" },
-      { nombre: "Ira/Enojo", color: "#c2410c" },
-      { nombre: "Asco/Aversión", color: "#4d7c0f" },
-      { nombre: "Frustración", color: "#be185d" },
-      { nombre: "Sobrecarga", color: "#115e59" },
-      { nombre: "Soledad", color: "#475569" },
-      { nombre: "Estrés", color: "#a16207" },
-      { nombre: "Ansiedad", color: "#4338ca" },
-      { nombre: "Sensibilidad", color: "#a21caf" },
-      { nombre: "Seguridad", color: "#15803d" },
-      { nombre: "Irritabilidad", color: "#9f1239" },
-      { nombre: "Entusiasmo", color: "#0e7490" },
-      { nombre: "Inseguridad", color: "#57534e" },
-      { nombre: "Indiferencia", color: "#6b7280" }
+      { nombre: "Alegría/Felicidad", color: "#b45309", imagen: "Alegría.png" },
+      { nombre: "Tristeza", color: "#2563eb", imagen: "Tristeza.png" },
+      { nombre: "Miedo", color: "#6d28d9", imagen: "Miedo.png" },
+      { nombre: "Ira/Enojo", color: "#c2410c", imagen: "Ira y Enojo.png" },
+      { nombre: "Asco/Aversión", color: "#4d7c0f", imagen: "Asco.png" },
+      { nombre: "Frustración", color: "#be185d", imagen: "Frustación.png" },
+      { nombre: "Sobrecarga", color: "#115e59", imagen: "Sobrecarga.png" },
+      { nombre: "Soledad", color: "#475569", imagen: "Soledad.png" },
+      { nombre: "Estrés", color: "#a16207", imagen: "Estrés.png" },
+      { nombre: "Ansiedad", color: "#4338ca", imagen: "Ansiedad.png" },
+      { nombre: "Sensibilidad", color: "#a21caf", imagen: "Sensibilidad.png" },
+      { nombre: "Seguridad", color: "#15803d", imagen: "Seguridad.png" },
+      { nombre: "Irritabilidad", color: "#9f1239", imagen: "Irritabilidad.png" },
+      { nombre: "Entusiasmo", color: "#0e7490", imagen: "Entusiasmo.png" },
+      { nombre: "Inseguridad", color: "#57534e", imagen: "Inseguridad.png" },
+      { nombre: "Indiferencia", color: "#6b7280", imagen: "Indiferencia.png" }
     ];
 
     function colorDe(nombre) {
@@ -734,11 +742,21 @@ quitquit<!DOCTYPE html>
     let emocionesSeleccionadas = [];
     let intensidades = {};
 
-    EMOCIONES.forEach(({ nombre, color }) => {
+    EMOCIONES.forEach(({ nombre, color, imagen }) => {
       const boton = document.createElement("button");
       boton.type = "button";
       boton.className = "emocion";
-      boton.textContent = nombre;
+      if (imagen) {
+        const figura = document.createElement("img");
+        figura.src = `Imgenes/Sentimientos/${imagen}`;
+        figura.alt = "";
+        figura.width = 56;
+        figura.height = 56;
+        boton.appendChild(figura);
+      }
+      const etiqueta = document.createElement("span");
+      etiqueta.textContent = nombre;
+      boton.appendChild(etiqueta);
       boton.style.setProperty("--color", color);
       boton.setAttribute("aria-pressed", "false");
       boton.addEventListener("click", () => alternarEmocion(nombre, boton));
