@@ -376,6 +376,15 @@ quitquit<!DOCTYPE html>
 
     .overlay-emergencia { z-index: 3000; }
 
+    .botones-ayuda {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .botones-ayuda .btn { text-decoration: none; }
+
     .campo {
       text-align: left;
       margin-bottom: 1rem;
@@ -681,12 +690,11 @@ quitquit<!DOCTYPE html>
   <div class="overlay overlay-emergencia" id="emergencia" role="dialog" aria-modal="true" aria-labelledby="titulo-emergencia" hidden>
     <div class="modal">
       <h1 id="titulo-emergencia">¿Necesitas ayuda ahora?</h1>
-      <p>
-        Si estás en peligro o sientes que no puedes esperar, pide ayuda de inmediato:<br><br>
-        <strong>105</strong> · Policía Nacional<br>
-        <strong>106</strong> · SAMU<br>
-        <strong>113, opción 5</strong> · Línea de salud mental (MINSA)
-      </p>
+      <p>Si estás en peligro o sientes que no puedes esperar, pide ayuda de inmediato.</p>
+      <div class="botones-ayuda">
+        <a class="btn" href="Números%20de%20ayuda/Atención%20psicológica%20según%20tu%20campus.pdf" target="_blank" rel="noopener">Atención psicológica</a>
+        <a class="btn" href="Números%20de%20ayuda/Números%20de%20emercia.pdf" target="_blank" rel="noopener">Números de emergencia</a>
+      </div>
       <button type="button" class="btn" id="btn-cerrar-emergencia">Cerrar</button>
     </div>
   </div>
