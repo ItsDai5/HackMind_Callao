@@ -1252,7 +1252,24 @@ quitquit<!DOCTYPE html>
 
     function actualizarBotonSesion() {
       botonCerrarSesion.hidden = !sessionStorage.getItem(CLAVE_SESION);
+      fijarBotonSesion();
     }
+
+    // En móvil la barra del navegador cambia la parte visible de la pantalla;
+    // se recoloca el botón según el área visible para que siga abajo a la izquierda.
+    function fijarBotonSesion() {
+      const vista = window.visualViewport;
+      const alto = vista ? vista.height : window.innerHeight;
+      const inicio = vista ? vista.offsetTop : 0;
+      botonCerrarSesion.style.bottom = "auto";
+      botonCerrarSesion.style.top = `${inicio + alto - botonCerrarSesion.offsetHeight - 20}px`;
+    }
+
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", fijarBotonSesion);
+      window.visualViewport.addEventListener("scroll", fijarBotonSesion);
+    }
+    window.addEventListener("resize", fijarBotonSesion);
 
     function cerrarSesion() {
       sessionStorage.removeItem(CLAVE_SESION);
