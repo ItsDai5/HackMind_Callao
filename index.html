@@ -357,23 +357,6 @@ quitquit<!DOCTYPE html>
       margin: 0 auto 0.5rem;
     }
 
-    .boton-reinicio {
-      position: fixed;
-      left: 1rem;
-      bottom: 1.25rem;
-      z-index: 2000;
-      background: none;
-      border: none;
-      padding: 0.25rem;
-      font-size: 0.8rem;
-      color: #64748b;
-      text-decoration: underline;
-      cursor: pointer;
-    }
-
-    .boton-reinicio:hover { color: #334155; }
-    .boton-reinicio:focus-visible { outline: 2px solid #93c5fd; outline-offset: 2px; }
-
     .overlay-emergencia { z-index: 3000; }
 
     .botones-ayuda {
@@ -701,7 +684,6 @@ quitquit<!DOCTYPE html>
 
   <button type="button" class="boton-emergencia" id="btn-emergencia">Emergencia</button>
 
-  <button type="button" class="boton-reinicio" id="btn-reiniciar">Reiniciar app</button>
 
   <script>
     const CLAVE_REGISTROS = "emosense_registros";
@@ -1271,24 +1253,6 @@ quitquit<!DOCTYPE html>
     const botonEmergencia = document.getElementById("btn-emergencia");
     const panelEmergencia = document.getElementById("emergencia");
     const botonCerrarEmergencia = document.getElementById("btn-cerrar-emergencia");
-    const botonReiniciar = document.getElementById("btn-reiniciar");
-
-    botonReiniciar.addEventListener("click", () => {
-      const confirmado = window.confirm("¿Borrar todos los registros y empezar desde cero?");
-      if (!confirmado) return;
-
-      localStorage.removeItem(CLAVE_REGISTROS);
-      localStorage.removeItem("emosense_registro");
-      localStorage.removeItem(CLAVE_USUARIO);
-      sessionStorage.removeItem(CLAVE_SESION);
-      reiniciarFlujo();
-      pantallaPrincipal.hidden = true;
-      panelEmergencia.hidden = true;
-      flujoInicial.hidden = true;
-      registroInicial.hidden = false;
-      document.getElementById("titulo-registro").focus();
-    });
-
     botonEmergencia.addEventListener("click", () => {
       panelEmergencia.hidden = false;
       botonCerrarEmergencia.focus();
