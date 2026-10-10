@@ -368,6 +368,14 @@ quitquit<!DOCTYPE html>
       margin: 0 auto 0.5rem;
     }
 
+    .logo-principal {
+      display: block;
+      width: 220px;
+      max-width: 100%;
+      height: auto;
+      margin: 0 auto 0.75rem;
+    }
+
     .overlay-emergencia { z-index: 3000; }
 
     .botones-ayuda {
@@ -474,6 +482,7 @@ quitquit<!DOCTYPE html>
       .emociones { grid-template-columns: repeat(2, 1fr); }
       .pantalla-completa { padding: 1rem 1rem 5rem; }
       .logo-emosense { width: 64px; height: 64px; }
+      .logo-principal { width: 170px; }
       .contenedor-paso { padding: 1.25rem; }
       .titulo-principal { font-size: 2.25rem; }
       .bienvenida-titulo { font-size: 1.4rem; }
@@ -648,10 +657,8 @@ quitquit<!DOCTYPE html>
   </div>
 
   <main class="pantalla-completa flujo" id="pantalla-principal" hidden>
-    <img class="logo-emosense" src="Imgenes/246dbbc0-ba2c-49a1-96dc-6dfb2582f18d-removebg-preview.png" alt="Logo de EmoSense">
-
     <section class="contenedor-paso">
-      <h1 class="titulo-principal">EmoSense</h1>
+      <img class="logo-principal" src="Imgenes/246dbbc0-ba2c-49a1-96dc-6dfb2582f18d-removebg-preview.png" alt="Logo de EmoSense">
       <p class="subtitulo" id="subtitulo-principal">Tu semana emocional</p>
 
       <div class="vistas" role="group" aria-label="Ver registros por">
@@ -838,8 +845,15 @@ quitquit<!DOCTYPE html>
       botonContinuar2.focus();
     });
 
-    function leerRegistros() {
+    function leerTodosLosRegistros() {
       return JSON.parse(localStorage.getItem(CLAVE_REGISTROS) || "[]");
+    }
+
+    // Solo se muestran los registros del usuario que inició sesión.
+    function leerRegistros() {
+      const usuario = JSON.parse(localStorage.getItem(CLAVE_USUARIO) || "null");
+      if (!usuario) return [];
+      return leerTodosLosRegistros().filter((registro) => registro.correo === usuario.correo);
     }
 
     function fechaLocal(fecha) {
@@ -959,9 +973,11 @@ quitquit<!DOCTYPE html>
         if (masIntensa) {
           caja.style.background = colorDe(masIntensa.emocion);
           caja.style.color = "#ffffff";
-          texto.textContent = masIntensa.emocion;
+          texto.textContent = vistaActual === "semana" ? "" : masIntensa.emocion;
+          texto.title = masIntensa.emocion;
         } else {
-          texto.textContent = "Sin registro";
+          texto.textContent = vistaActual === "semana" ? "S/R" : "Sin registro";
+          texto.title = "Sin registro";
         }
         caja.appendChild(texto);
 
@@ -1107,19 +1123,15 @@ quitquit<!DOCTYPE html>
     }
 
     botonFinalizar.addEventListener("click", () => {
-      const fechaHoy = fechaLocal(new Date());
-      const todos = leerRegistros();
-      const anterior = todos.find((registro) => registro.fecha === fechaHoy);
-      const registros = todos.filter((registro) => registro.fecha !== fechaHoy);
-      const acumular = (previo, nuevo) => [previo, nuevo].map((texto) => (texto || "").trim()).filter(Boolean).join("\n");
-      const emocionesDelDia = new Map((anterior?.emociones || []).map(({ emocion, intensidad }) => [emocion, intensidad]));
-      emocionesSeleccionadas.forEach((nombre) => emocionesDelDia.set(nombre, intensidades[nombre]));
+      const usuario = JSON.parse(localStorage.getItem(CLAVE_USUARIO) || "null");
       const nuevoRegistro = {
-        fecha: fechaHoy,
-        emociones: [...emocionesDelDia].map(([emocion, intensidad]) => ({ emocion, intensidad })),
-        pensamiento: acumular(anterior?.pensamiento, quePensaste.value),
-        accion: acumular(anterior?.accion, queHiciste.value)
+        fecha: fechaLocal(new Date()),
+        correo: usuario.correo,
+        emociones: emocionesSeleccionadas.map((nombre) => ({ emocion: nombre, intensidad: intensidades[nombre] })),
+        pensamiento: quePensaste.value.trim(),
+        accion: queHiciste.value.trim()
       };
+      const registros = leerTodosLosRegistros();
       registros.push(nuevoRegistro);
       localStorage.setItem(CLAVE_REGISTROS, JSON.stringify(registros));
       enviarRegistro(nuevoRegistro);
@@ -1283,6 +1295,13 @@ quitquit<!DOCTYPE html>
     botonCerrarSesion.addEventListener("click", cerrarSesion);
 
     const usuarioGuardado = JSON.parse(localStorage.getItem(CLAVE_USUARIO) || "null");
+    // Los registros guardados antes de ligarlos al usuario se asignan al usuario del dispositivo.
+    if (usuarioGuardado) {
+      const guardados = leerTodosLosRegistros();
+      if (guardados.some((registro) => !registro.correo)) {
+        localStorage.setItem(CLAVE_REGISTROS, JSON.stringify(guardados.map((registro) => registro.correo ? registro : { ...registro, correo: usuarioGuardado.correo })));
+      }
+    }
     if (!usuarioGuardado || !usuarioGuardado.claveHash) {
       registroInicial.hidden = false;
       document.getElementById("titulo-registro").focus();
