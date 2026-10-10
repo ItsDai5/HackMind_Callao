@@ -977,7 +977,7 @@ quitquit<!DOCTYPE html>
           texto.textContent = vistaActual === "semana" ? "" : masIntensa.emocion;
           texto.title = masIntensa.emocion;
         } else {
-          texto.textContent = vistaActual === "semana" ? "S/R" : "Sin registro";
+          texto.textContent = vistaActual === "semana" ? "" : "Sin registro";
           texto.title = "Sin registro";
         }
         caja.appendChild(texto);
@@ -1061,7 +1061,7 @@ quitquit<!DOCTYPE html>
 
       if (emociones.length === 0 && pensamientos.length === 0 && acciones.length === 0) {
         const aviso = document.createElement("p");
-        aviso.textContent = "No hay registros en este periodo.";
+        aviso.textContent = vistaActual === "semana" ? "Sin registro" : "No hay registros en este periodo.";
         contenedorDetalle.appendChild(aviso);
         return;
       }
