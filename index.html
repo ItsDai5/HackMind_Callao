@@ -406,11 +406,13 @@ quitquit<!DOCTYPE html>
 
     .campo textarea:focus-visible { outline: 3px solid #93c5fd; outline-offset: 2px; }
 
-    .barra-sesion {
-      width: 100%;
-      max-width: 720px;
-      display: flex;
-      justify-content: flex-end;
+    .boton-cerrar-sesion {
+      position: fixed;
+      left: 1rem;
+      bottom: 1.25rem;
+      z-index: 2000;
+      padding: 0.5rem 1rem;
+      font-size: 0.9rem;
     }
 
     .mensaje-error {
@@ -580,10 +582,6 @@ quitquit<!DOCTYPE html>
       <p class="subtitulo">Un espacio para expresar tus emociones y cuidar tu bienestar emocional. 🌷</p>
     </div>
 
-    <div class="barra-sesion">
-      <button type="button" class="btn btn-secundario" id="btn-cerrar-sesion-flujo">Cerrar sesión</button>
-    </div>
-
     <section class="contenedor-paso" id="paso-1">
       <p class="indicador">Paso 1 de 3</p>
       <h2 id="titulo-paso-1" tabindex="-1">¿Qué emoción sientes ahora?</h2>
@@ -640,10 +638,6 @@ quitquit<!DOCTYPE html>
   <main class="pantalla-completa flujo" id="pantalla-principal" hidden>
     <img class="logo-emosense" src="Imgenes/246dbbc0-ba2c-49a1-96dc-6dfb2582f18d-removebg-preview.png" alt="Logo de EmoSense">
 
-    <div class="barra-sesion">
-      <button type="button" class="btn btn-secundario" id="btn-cerrar-sesion">Cerrar sesión</button>
-    </div>
-
     <section class="contenedor-paso">
       <h1 class="titulo-principal">EmoSense</h1>
       <p class="subtitulo" id="subtitulo-principal">Tu semana emocional</p>
@@ -683,6 +677,8 @@ quitquit<!DOCTYPE html>
   </div>
 
   <button type="button" class="boton-emergencia" id="btn-emergencia">Emergencia</button>
+
+  <button type="button" class="btn btn-secundario boton-cerrar-sesion" id="btn-cerrar-sesion" hidden>Cerrar sesión</button>
 
 
   <script>
@@ -1170,6 +1166,7 @@ quitquit<!DOCTYPE html>
       };
       localStorage.setItem(CLAVE_USUARIO, JSON.stringify(usuario));
       sessionStorage.setItem(CLAVE_SESION, "activa");
+      actualizarBotonSesion();
       enviarASupabase({
         tipo: "usuario",
         nombre: usuario.nombre,
@@ -1191,6 +1188,7 @@ quitquit<!DOCTYPE html>
 
     function iniciarSesion() {
       sessionStorage.setItem(CLAVE_SESION, "activa");
+      actualizarBotonSesion();
       formLogin.reset();
       loginError.hidden = true;
       loginInicial.hidden = true;
@@ -1228,16 +1226,22 @@ quitquit<!DOCTYPE html>
       document.getElementById("titulo-login").focus();
     });
 
+    const botonCerrarSesion = document.getElementById("btn-cerrar-sesion");
+
+    function actualizarBotonSesion() {
+      botonCerrarSesion.hidden = !sessionStorage.getItem(CLAVE_SESION);
+    }
+
     function cerrarSesion() {
       sessionStorage.removeItem(CLAVE_SESION);
+      actualizarBotonSesion();
       pantallaPrincipal.hidden = true;
       flujoInicial.hidden = true;
       loginInicial.hidden = false;
       document.getElementById("titulo-login").focus();
     }
 
-    document.getElementById("btn-cerrar-sesion").addEventListener("click", cerrarSesion);
-    document.getElementById("btn-cerrar-sesion-flujo").addEventListener("click", cerrarSesion);
+    botonCerrarSesion.addEventListener("click", cerrarSesion);
 
     const usuarioGuardado = JSON.parse(localStorage.getItem(CLAVE_USUARIO) || "null");
     if (!usuarioGuardado || !usuarioGuardado.claveHash) {
@@ -1249,6 +1253,7 @@ quitquit<!DOCTYPE html>
       loginInicial.hidden = false;
       document.getElementById("titulo-login").focus();
     }
+    actualizarBotonSesion();
 
     const botonEmergencia = document.getElementById("btn-emergencia");
     const panelEmergencia = document.getElementById("emergencia");
